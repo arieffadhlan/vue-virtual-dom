@@ -79,7 +79,136 @@ export interface ProcessFlowStage {
 	diffLines: ProcessDiffLine[]
 }
 
+export interface ProcessGraphNodeConfig {
+	id: string
+	stageKey: ProcessPhaseKey
+	isMain: boolean
+	title: string
+	subtitle: string
+	desc: string
+}
+
+export const detailedProcessNodes: ProcessGraphNodeConfig[] = [
+	{
+		id: '1-update',
+		stageKey: 'source-update',
+		isMain: true,
+		title: '1. Source Update',
+		subtitle: 'Kode Awal Berubah',
+		desc: 'State/props berubah dan dependency reaktif memicu update untuk komponen terkait.',
+	},
+	{
+		id: '1-mark',
+		stageKey: 'source-update',
+		isMain: false,
+		title: 'Reactive Trigger',
+		subtitle: 'Effect Ditandai Ulang',
+		desc: 'Reactive effect yang bergantung pada state tersebut ditandai untuk dijalankan ulang.',
+	},
+	{
+		id: '1-queue',
+		stageKey: 'source-update',
+		isMain: false,
+		title: 'Scheduler Queue',
+		subtitle: 'Microtask Queue',
+		desc: 'Scheduler Vue membatch update dalam microtask agar render berulang pada tick sama bisa dihindari.',
+	},
+
+	{
+		id: '2-compile',
+		stageKey: 'compile',
+		isMain: true,
+		title: '2. Compile Phase',
+		subtitle: 'Template -> Render Function',
+		desc: 'Template di-compile melalui parse, transform, lalu codegen menjadi render function.',
+	},
+	{
+		id: '2-parse',
+		stageKey: 'compile',
+		isMain: false,
+		title: 'Parse Template',
+		subtitle: 'Abstract Syntax Tree',
+		desc: 'Compiler membangun AST dari elemen, atribut, dan interpolasi agar struktur template bisa dianalisis.',
+	},
+	{
+		id: '2-transform',
+		stageKey: 'compile',
+		isMain: false,
+		title: 'Transform & Hints',
+		subtitle: 'Static Cache / Patch Flags',
+		desc: 'Compiler menyiapkan cache static (hoist), patch flags, dan block metadata untuk jalur update runtime yang lebih cepat.',
+	},
+	{
+		id: '2-generate',
+		stageKey: 'compile',
+		isMain: false,
+		title: 'Codegen Render Function',
+		subtitle: 'Runtime Input',
+		desc: 'Output compile adalah fungsi render yang dipakai renderer untuk membuat VNode tree.',
+	},
+
+	{
+		id: '3-render',
+		stageKey: 'render',
+		isMain: true,
+		title: '3. Mount / Render Effect',
+		subtitle: 'Eksekusi Render Function',
+		desc: 'Renderer menjalankan render function di dalam reactive effect untuk menghasilkan VNode tree terbaru.',
+	},
+	{
+		id: '3-vdom',
+		stageKey: 'render',
+		isMain: false,
+		title: 'VNode Tree Creation',
+		subtitle: 'UI Representation',
+		desc: 'VNode disusun sebagai representasi virtual UI yang nanti dipakai untuk mount atau patch.',
+	},
+
+	{
+		id: '4-diff',
+		stageKey: 'diff',
+		isMain: true,
+		title: '4. Diff / Reconciliation',
+		subtitle: 'Bandingkan VDOM Awal & Akhir',
+		desc: 'Renderer membandingkan VNode tree lama dan baru untuk menentukan update minimum pada DOM nyata.',
+	},
+	{
+		id: '4-fastpath',
+		stageKey: 'diff',
+		isMain: false,
+		title: 'Compiler Fast Paths',
+		subtitle: 'Patch Flags / Tree Flattening',
+		desc: 'Dengan patch flags dan block tree flattening, runtime fokus pada dynamic descendants dan melewati bagian static.',
+	},
+
+	{
+		id: '5-patch',
+		stageKey: 'patch',
+		isMain: true,
+		title: '5. Patch Commit',
+		subtitle: 'Apply DOM Updates',
+		desc: 'Renderer menerapkan operasi host DOM seperlunya: insert, remove, move, update text, dan patch props.',
+	},
+	{
+		id: '5-dom',
+		stageKey: 'patch',
+		isMain: false,
+		title: 'Host Operations',
+		subtitle: 'Minimal DOM Work',
+		desc: 'Update dijalankan hanya pada node target yang berubah agar biaya patch tetap rendah.',
+	},
+	{
+		id: '5-lifecycle',
+		stageKey: 'patch',
+		isMain: false,
+		title: 'Post-flush Hooks',
+		subtitle: 'updated / post watchers',
+		desc: 'Setelah patch selesai, Vue menjalankan updated hooks dan watcher dengan flush post.',
+	},
+]
 export interface ProcessStageFlowNodeData {
+	isMain: boolean
+	stageKey: ProcessPhaseKey
 	index: number
 	title: string
 	subtitle: string
@@ -516,7 +645,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 			title: '1. Source Update',
 			subtitle: 'Kode awal -> kode akhir',
 			summary:
-				'Scheduler menandai komponen dirty ketika source berubah. Perubahan ini memicu pipeline compiler dan render effect.',
+				'Sumber perubahan memicu dependency reaktif, lalu scheduler membatch pekerjaan render effect dalam microtask.',
 			metric: `${countLines(sourceLeft)} lines -> ${countLines(sourceRight)} lines`,
 			leftTitle: 'Kode Awal',
 			rightTitle: 'Kode Akhir',
@@ -526,10 +655,10 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 
 		const compileStage: ProcessStageDraft = {
 			key: 'compile',
-			title: '2. Compiler Phase',
+			title: '2. Compile Phase',
 			subtitle: 'AST sebelum vs sesudah',
 			summary:
-				'Vue mem-parse template menjadi AST, menerapkan transform, lalu menyiapkan metadata agar render/runtime bisa bekerja efisien.',
+				'Compile berjalan lewat parse, transform, dan codegen. Pada SFC umumnya dilakukan AOT saat build; runtime compile hanya pada build tertentu.',
 			metric: `AST ${beforeResult.astNodeCount} -> ${afterResult.astNodeCount}`,
 			leftTitle: 'AST Summary (Awal)',
 			rightTitle: 'AST Summary (Akhir)',
@@ -539,10 +668,10 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 
 		const renderStage: ProcessStageDraft = {
 			key: 'render',
-			title: '3. Render Phase',
+			title: '3. Mount / Render Effect',
 			subtitle: 'Render function sebelum vs sesudah',
 			summary:
-				'Render function dieksekusi oleh reactive effect untuk menghasilkan VNode tree baru yang merepresentasikan state terbaru.',
+				'Renderer mengeksekusi render function sebagai reactive effect untuk menghasilkan VNode tree terbaru dari state saat ini.',
 			metric: `Render code ${beforeResult.renderLineCount} -> ${afterResult.renderLineCount} lines`,
 			leftTitle: 'Render Function (Awal)',
 			rightTitle: 'Render Function (Akhir)',
@@ -554,9 +683,9 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 		const afterSnapshot = toSnapshot(afterResult.nodes)
 		const diffStage: ProcessStageDraft = {
 			key: 'diff',
-			title: '4. Diff Phase',
+			title: '4. Diff / Reconciliation',
 			subtitle: 'VNode lama vs VNode baru',
-			summary: `Runtime membandingkan VNode tree: +${changes.added.length} added, ~${changes.changed.length} changed, -${changes.removed.length} removed.`,
+			summary: `Runtime membandingkan VNode tree dengan fast path compiler-informed (patch flags / tree flattening): +${changes.added.length} added, ~${changes.changed.length} changed, -${changes.removed.length} removed.`,
 			metric: `+${changes.added.length} ~${changes.changed.length} -${changes.removed.length}`,
 			leftTitle: 'VNode Snapshot (Lama)',
 			rightTitle: 'VNode Snapshot (Baru)',
@@ -568,16 +697,16 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 		const patchStage: ProcessStageDraft = {
 			key: 'patch',
 			title: '5. Patch Commit',
-			subtitle: 'Rencana mutasi DOM nyata',
+			subtitle: 'Commit mutasi DOM minimal',
 			summary:
-				'Patch engine commit hanya operasi yang diperlukan (insert/update/remove) supaya update DOM tetap minimal.',
+				'Patch commit menjalankan operasi host DOM seperlunya, lalu menyelesaikan antrian post-flush untuk hook/watcher terkait.',
 			metric: `${changes.added.length + changes.changed.length + changes.removed.length} mutations`,
 			leftTitle: 'Patch Plan',
 			rightTitle: 'Patch Commit Result',
 			leftText: patchPlan,
 			rightText:
 				changes.added.length + changes.changed.length + changes.removed.length > 0
-					? `Commit ${changes.added.length + changes.changed.length + changes.removed.length} targeted mutation(s) into Real DOM.`
+					? `Commit ${changes.added.length + changes.changed.length + changes.removed.length} targeted host DOM mutation(s).`
 					: 'No commit needed. DOM stays unchanged.',
 		}
 
@@ -616,7 +745,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 			afterLineCount: countLines(afterResult.source),
 		}
 
-		if (processStepIndex.value >= processStages.value.length) {
+		if (processStepIndex.value >= detailedProcessNodes.length) {
 			processStepIndex.value = 0
 		}
 	}
@@ -634,7 +763,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 
 		if (
 			processStages.value.length === 0 ||
-			processStepIndex.value >= processStages.value.length - 1
+			processStepIndex.value >= detailedProcessNodes.length - 1
 		) {
 			isProcessPlaying.value = false
 			return
@@ -651,7 +780,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 			return
 		}
 
-		if (processStepIndex.value >= processStages.value.length - 1) {
+		if (processStepIndex.value >= detailedProcessNodes.length - 1) {
 			processStepIndex.value = 0
 		}
 
@@ -677,7 +806,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 
 		processStepIndex.value = Math.min(
 			processStepIndex.value + 1,
-			processStages.value.length - 1,
+			detailedProcessNodes.length - 1,
 		)
 	}
 
@@ -696,29 +825,41 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 		processStepIndex.value = 0
 	}
 
-	function jumpToProcessStep(index: number): void {
+	function jumpToProcessStep(stageIndex: number): void {
 		pauseProcessFlow()
 
-		if (index < 0 || index >= processStages.value.length) {
-			return
+		const targetStage = processStages.value[stageIndex]
+		if (!targetStage) return
+		const index = detailedProcessNodes.findIndex((node) => node.stageKey === targetStage.key)
+		if (index >= 0) {
+			processStepIndex.value = index
 		}
-
-		processStepIndex.value = index
 	}
 
-	function jumpToProcessStepByKey(stageKey: string): void {
-		const index = processStages.value.findIndex((stage) => stage.key === stageKey)
-
+	function jumpToProcessStepByKey(stageKeyOrNodeId: string): void {
+		pauseProcessFlow()
+		let index = detailedProcessNodes.findIndex((node) => node.id === stageKeyOrNodeId)
 		if (index < 0) {
-			return
+			index = detailedProcessNodes.findIndex((node) => node.stageKey === stageKeyOrNodeId)
 		}
-
-		jumpToProcessStep(index)
+		if (index >= 0) {
+			processStepIndex.value = index
+		}
 	}
+
+	const activeStageIndex = computed<number>(() => {
+		if (processStages.value.length === 0) return 0
+		const def = detailedProcessNodes[processStepIndex.value]
+		if (!def) return 0
+		return Math.max(
+			0,
+			processStages.value.findIndex((s) => s.key === def.stageKey),
+		)
+	})
 
 	const activeProcessStep = computed<ProcessFlowStage>(() => {
 		return (
-			processStages.value[processStepIndex.value] ??
+			processStages.value[activeStageIndex.value] ??
 			processStages.value[0] ?? {
 				key: 'source-update',
 				title: '1. Source Update',
@@ -735,44 +876,58 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 	})
 
 	const processFlowNodes = computed<Node<ProcessStageFlowNodeData>[]>(() => {
-		return processStages.value.map((stage, index) => ({
-			id: stage.key,
-			type: 'process-stage',
-			position: {
-				x: index * 258 + 24,
-				y: index % 2 === 0 ? 28 : 112,
-			},
-			draggable: false,
-			selectable: true,
-			data: {
-				index: index + 1,
-				title: stage.title,
-				subtitle: stage.subtitle,
-				summary: stage.summary,
-				metric: stage.metric,
-				isActive: processStepIndex.value === index,
-			},
-		}))
+		let currentMainIndex = -1
+		let currentSubIndex = 0
+
+		return detailedProcessNodes.map((def, index) => {
+			if (def.isMain) {
+				currentMainIndex++
+				currentSubIndex = 0
+			} else {
+				currentSubIndex++
+			}
+
+			const dynamicStage = processStages.value.find((s) => s.key === def.stageKey)
+			return {
+				id: def.id,
+				type: 'process-stage',
+				position: {
+					x: currentMainIndex * 380 + 24,
+					y: currentSubIndex * 180 + 24,
+				},
+				draggable: false,
+				selectable: true,
+				data: {
+					index: index + 1,
+					title: def.title,
+					subtitle: def.subtitle,
+					summary: def.desc,
+					metric: dynamicStage ? dynamicStage.metric : 'N/A',
+					isActive: processStepIndex.value === index,
+					isMain: def.isMain,
+					stageKey: def.stageKey,
+				},
+			}
+		})
 	})
 
 	const processFlowEdges = computed<Edge[]>(() => {
 		const edges: Edge[] = []
 
-		for (let index = 1; index < processStages.value.length; index += 1) {
-			const sourceStage = processStages.value[index - 1]
-			const targetStage = processStages.value[index]
+		for (let index = 1; index < detailedProcessNodes.length; index += 1) {
+			const sourceNode = detailedProcessNodes[index - 1]!
+			const targetNode = detailedProcessNodes[index]!
 
-			if (!sourceStage || !targetStage) {
-				continue
-			}
+			if (!sourceNode || !targetNode) continue
 
 			edges.push({
-				id: `${sourceStage.key}->${targetStage.key}`,
-				source: sourceStage.key,
-				target: targetStage.key,
+				id: `${sourceNode.id}->${targetNode.id}`,
+				source: sourceNode.id,
+				target: targetNode.id,
 				animated: processStepIndex.value >= index,
+				type: 'smoothstep',
 				style: {
-					stroke: processStepIndex.value >= index ? '#10b981' : '#94a3b8',
+					stroke: processStepIndex.value >= index ? '#10b981' : '#cbd5e1',
 					strokeWidth: 2.2,
 				},
 			})
@@ -811,6 +966,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 		processStepIndex,
 		processError,
 		processStages,
+		activeStageIndex,
 		activeProcessStep,
 		processStats,
 		processFlowNodes,

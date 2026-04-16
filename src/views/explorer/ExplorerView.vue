@@ -34,6 +34,7 @@ const {
 	processStepIndex,
 	processError,
 	processStages,
+	activeStageIndex,
 	activeProcessStep,
 	processStats,
 	processFlowNodes,
@@ -476,7 +477,7 @@ onUnmounted(() => {
 			:stats="processStats"
 			:is-playing="isProcessPlaying"
 			:speed-ms="processSpeedMs"
-			:step-index="processStepIndex"
+			:step-index="activeStageIndex"
 			:stages="processStages"
 			:active-step="activeProcessStep"
 			:flow-nodes="processFlowNodes"
@@ -688,4 +689,3 @@ onUnmounted(() => {
 		</div>
 	</section>
 </template>
-  

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { VueFlow, type Edge, type Node } from '@vue-flow/core'
 import type {
 	ProcessDiffLineStatus,
@@ -42,10 +41,8 @@ const emit = defineEmits<{
 }>()
 
 const flowNodeTypes = {
-	processStage: ProcessStageNode,
+	['process-stage']: ProcessStageNode,
 }
-
-const stageCountLabel = computed(() => props.stages.length.toString().padStart(2, '0'))
 
 function processDiffLineClass(status: ProcessDiffLineStatus, side: 'left' | 'right'): string {
 	if (status === 'same') {
@@ -96,7 +93,7 @@ function handleSpeedInput(event: Event): void {
 					VDOM Process Flow (Awal -> Akhir)
 				</h2>
 				<p class="m-0 mt-0.5 text-[0.8rem] text-[var(--color-text-faint)]">
-					Simulasi 5 tahap internal Virtual DOM dari input awal sampai patch final.
+					Mengikuti rendering mechanism Vue: compile -> mount/render effect -> patch.
 				</p>
 			</div>
 			<button
@@ -280,78 +277,59 @@ function handleSpeedInput(event: Event): void {
 				</div>
 			</div>
 
-			<div class="grid gap-4 xl:grid-cols-[320px_1fr]">
+			<div
+				class="overflow-hidden rounded-lg border border-[var(--color-border-ds)] bg-white shadow-sm flex flex-col"
+			>
 				<div
-					class="rounded-lg border border-[var(--color-border-ds)] bg-[var(--color-background-soft)] p-3"
+					class="bg-[var(--color-background-soft)] px-4 py-3 border-b border-[var(--color-border-ds)]"
 				>
-					<p
-						class="m-0 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-faint)]"
+					<h3
+						class="m-0 text-[0.85rem] font-bold text-[var(--color-text-ds)] flex items-center gap-2"
 					>
-						Tahapan
-					</p>
-					<p class="m-0 mt-1 text-[0.8rem] text-[var(--color-text-dim)]">
-						Total {{ stageCountLabel }} langkah
-					</p>
-					<div class="mt-3 space-y-2">
-						<button
-							v-for="(stage, stageIndex) in stages"
-							:key="`${stage.key}-card`"
-							type="button"
-							class="w-full rounded-md border px-3 py-2 text-left transition"
-							:class="
-								stageIndex === stepIndex
-									? 'border-[var(--color-brand)] bg-[var(--color-brand)]/10'
-									: 'border-[var(--color-border-ds)] bg-white hover:border-[var(--color-brand)]/40'
-							"
-							@click="emit('jump-step', stageIndex)"
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							class="text-[var(--color-brand)]"
 						>
-							<p
-								class="m-0 text-[0.74rem] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-faint)]"
-							>
-								{{ stageIndex + 1 }} · {{ stage.subtitle }}
-							</p>
-							<p
-								class="m-0 mt-1 text-[0.85rem] font-semibold text-[var(--color-text-ds)]"
-							>
-								{{ stage.title }}
-							</p>
-							<p class="m-0 mt-1 text-[0.78rem] text-[var(--color-text-dim)]">
-								{{ stage.summary }}
-							</p>
-						</button>
-					</div>
+							<path
+								d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+							></path>
+							<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+							<line x1="12" y1="22.08" x2="12" y2="12"></line>
+						</svg>
+						Graph Highlight
+					</h3>
+					<p class="m-0 mt-1 text-[0.75rem] text-[var(--color-text-dim)]">
+						Node aktif menyorot sub-proses runtime dan hint compiler (cache static,
+						patch flags, tree flattening) yang mempercepat patch.
+					</p>
 				</div>
-
-				<div
-					class="overflow-hidden rounded-lg border border-[var(--color-border-ds)] bg-white"
-				>
-					<div class="h-[260px] w-full border-b border-[var(--color-border-ds)]">
-						<VueFlow
-							:nodes="flowNodes"
-							:edges="flowEdges"
-							:fit-view-on-init="true"
-							:min-zoom="0.5"
-							:max-zoom="1.5"
-							:node-types="flowNodeTypes"
-							class="bg-[var(--color-background-soft)]"
-							@node-click="handleNodeClick"
-						>
-							<Background pattern-color="rgba(148, 163, 184, 0.35)" :gap="16" />
-							<MiniMap :pannable="true" :zoomable="true" node-color="#2f855a" />
-							<Controls position="bottom-right" />
-						</VueFlow>
-					</div>
-					<div class="p-3">
-						<p
-							class="m-0 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-faint)]"
-						>
-							Graph Highlight
-						</p>
-						<p class="m-0 mt-1 text-[0.8rem] text-[var(--color-text-dim)]">
-							Node aktif mengikuti tahapan berjalan. Klik node di flow untuk langsung
-							loncat.
-						</p>
-					</div>
+				<div class="h-[600px] w-full relative bg-[var(--color-background-ds)]">
+					<VueFlow
+						:nodes="flowNodes"
+						:edges="flowEdges"
+						:fit-view-on-init="true"
+						:min-zoom="0.3"
+						:max-zoom="2"
+						class="bg-[var(--color-background-soft)]"
+						@node-click="handleNodeClick"
+					>
+						<template #node-process-stage="nodeProps">
+							<ProcessStageNode v-bind="nodeProps" />
+						</template>
+						<Background pattern-color="rgba(148, 163, 184, 0.4)" :gap="16" />
+						<MiniMap
+							:pannable="true"
+							:zoomable="true"
+							node-color="#10b981"
+							mask-color="rgba(240, 243, 248, 0.6)"
+						/>
+						<Controls position="bottom-right" />
+					</VueFlow>
 				</div>
 			</div>
 
