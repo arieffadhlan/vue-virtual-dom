@@ -1,0 +1,81 @@
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css';
+@import 'tailwindcss';
+
+@theme {
+	--font-sans: 'Lexend', system-ui, sans-serif;
+	--font-mono: 'Dank Mono', monospace;
+
+	--color-background-ds: #f8fafc;
+	--color-background-surface: #ffffff;
+	--color-background-raised: #f1f5f9;
+
+	--color-border-ds: #e2e8f0;
+	--color-border-strong: #cbd5e1;
+
+	--color-text-ds: #1e293b;
+	--color-text-dim: #475569;
+	--color-text-faint: #64748b;
+
+	--color-brand: #10b981;
+	--color-brand-surface: #059669;
+	--color-brand-text: #ffffff;
+
+	--color-dynamic-node: #fed7aa;
+	--color-static-node: #bbf7d0;
+}
+
+body {
+	min-height: 100vh;
+	font-family: var(--font-sans);
+	color: var(--color-text-ds);
+	background-color: var(--color-background-ds);
+	background-image: radial-gradient(var(--color-border-strong) 1px, transparent 1px);
+	background-size: 24px 24px;
+	margin: 0;
+	-webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--color-border-strong);
+	border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-text-faint);
+}
+
+#app {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.cm-editor {
+	height: 100%;
+	font-family: var(--font-mono) !important;
+	border-radius: 0.75rem !important;
+	border: 1px solid var(--color-border-ds) !important;
+	background: var(--color-background-surface) !important;
+}
+
+.cm-scroller {
+	font-family: var(--font-mono) !important;
+	font-size: 0.85rem;
+}
+
+.vue-flow__edge-path {
+	stroke: var(--color-border-strong);
+	stroke-width: 2;
+}
+
+.vue-flow__edge.selected .vue-flow__edge-path {
+	stroke: var(--color-brand);
+	stroke-width: 3;
+}

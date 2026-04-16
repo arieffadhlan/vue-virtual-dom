@@ -1,0 +1,58 @@
+{
+	"name": "exploration-3",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "run-p type-check \"build-only {@}\" --",
+		"preview": "vite preview",
+		"test:unit": "vitest --run",
+		"build-only": "vite build",
+		"type-check": "vue-tsc --build",
+		"lint": "run-s lint:eslint",
+		"lint:eslint": "eslint . --fix --cache",
+		"format": "prettier --write .",
+		"docker:build": "docker build -t vue-v-dom-explorer:local .",
+		"docker:run": "docker run --rm -p 8080:80 vue-v-dom-explorer:local",
+		"docker:up": "docker compose up --build -d",
+		"docker:down": "docker compose down"
+	},
+	"dependencies": {
+		"@codemirror/autocomplete": "6.20.1",
+		"@codemirror/lang-html": "6.4.11",
+		"@vue-flow/core": "1.41.0",
+		"@vue/compiler-core": "3.5.0",
+		"@vue/compiler-dom": "3.5.0",
+		"codemirror": "6.0.0",
+		"dayjs": "1.11.10",
+		"dexie": "4.0.1",
+		"pinia": "2.2.0",
+		"vue": "3.5.0",
+		"vue-router": "4.4.5"
+	},
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.2.2",
+		"@tsconfig/node24": "^24.0.4",
+		"@types/node": "^24.12.0",
+		"@vitejs/plugin-vue": "^6.0.5",
+		"@vitest/eslint-plugin": "^1.6.13",
+		"@vue/eslint-config-typescript": "^14.7.0",
+		"@vue/tsconfig": "^0.9.1",
+		"eslint": "^10.1.0",
+		"eslint-plugin-vue": "~10.8.0",
+		"happy-dom": "^20.0.8",
+		"jiti": "2.6.1",
+		"npm-run-all2": "8.0.4",
+		"prettier": "3.8.1",
+		"tailwindcss": "^4.2.2",
+		"typescript": "~6.0.0",
+		"vite": "^8.0.3",
+		"vite-plugin-vue-devtools": "^8.1.1",
+		"vitest": "^4.1.2",
+		"vue-tsc": "^3.2.6"
+	},
+	"engines": {
+		"node": "^20.19.0 || >=22.12.0"
+	}
+}
