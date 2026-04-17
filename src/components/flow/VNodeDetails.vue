@@ -198,11 +198,11 @@ const isDynamic = computed(() => {
 				<h4
 					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
 				>
-					Source Code
+					Source Code (Template Snippet)
 				</h4>
 				<pre
-					class="m-0 overflow-x-auto rounded-md bg-[var(--color-background-ds)] p-2 text-[0.7rem] leading-relaxed text-[var(--color-text-ds)] border border-[var(--color-border-ds)] font-mono border-dashed"
-				><code>{{ node.sourcePreview }}</code></pre>
+					class="m-0 max-h-[280px] overflow-auto rounded-md bg-[var(--color-background-ds)] p-3 text-[0.74rem] leading-relaxed text-[var(--color-text-ds)] border border-[var(--color-border-ds)] font-mono border-dashed whitespace-pre-wrap break-words"
+				><code>{{ node.source || node.sourcePreview || '(source code tidak tersedia)' }}</code></pre>
 			</section>
 		</div>
 	</div>

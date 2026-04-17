@@ -3,8 +3,8 @@
 @import 'tailwindcss';
 
 @theme {
-	--font-sans: 'Lexend', system-ui, sans-serif;
-	--font-mono: 'Dank Mono', monospace;
+	--font-sans: 'Outfit', system-ui, sans-serif;
+	--font-mono: 'Dank Mono' !important;
 
 	--color-background-ds: #f8fafc;
 	--color-background-surface: #ffffff;

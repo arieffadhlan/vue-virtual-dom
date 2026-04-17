@@ -376,7 +376,9 @@ function handleSpeedInput(event: Event): void {
 								<span class="text-right text-[var(--color-text-faint)]">{{
 									line.line
 								}}</span>
-								<code class="truncate">{{ line.left || ' ' }}</code>
+								<pre class="m-0 whitespace-pre-wrap break-words">{{
+									line.left || ' '
+								}}</pre>
 							</li>
 						</ol>
 					</section>
@@ -401,7 +403,9 @@ function handleSpeedInput(event: Event): void {
 								<span class="text-right text-[var(--color-text-faint)]">{{
 									line.line
 								}}</span>
-								<code class="truncate">{{ line.right || ' ' }}</code>
+								<pre class="m-0 whitespace-pre-wrap break-words">{{
+									line.right || ' '
+								}}</pre>
 							</li>
 						</ol>
 					</section>

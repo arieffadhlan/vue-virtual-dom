@@ -120,7 +120,7 @@ export const detailedProcessNodes: ProcessGraphNodeConfig[] = [
 		isMain: true,
 		title: '2. Compile Phase',
 		subtitle: 'Template -> Render Function',
-		desc: 'Template di-compile melalui parse, transform, lalu codegen menjadi render function.',
+		desc: 'Compile umumnya terjadi sekali: saat build (AOT) atau saat runtime compiler pertama kali memproses template. Pada update state biasa, tahap ini tidak diulang dari awal.',
 	},
 	{
 		id: '2-parse',
@@ -169,7 +169,7 @@ export const detailedProcessNodes: ProcessGraphNodeConfig[] = [
 		stageKey: 'diff',
 		isMain: true,
 		title: '4. Diff / Reconciliation',
-		subtitle: 'Bandingkan VDOM Awal & Akhir',
+		subtitle: 'Bandingkan VDOM',
 		desc: 'Renderer membandingkan VNode tree lama dan baru untuk menentukan update minimum pada DOM nyata.',
 	},
 	{
@@ -234,6 +234,9 @@ interface UseVdomProcessFlowOptions {
 }
 
 const FALLBACK_SOURCE = '<div />'
+const PROCESS_STAGE_X_GAP = 350
+const PROCESS_STAGE_Y_GAP = 216
+const PROCESS_STAGE_CANVAS_PADDING = 24
 
 function normalizeTemplateSource(source: string): string {
 	return source.trim().length > 0 ? source : FALLBACK_SOURCE
@@ -658,7 +661,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 			title: '2. Compile Phase',
 			subtitle: 'AST sebelum vs sesudah',
 			summary:
-				'Compile berjalan lewat parse, transform, dan codegen. Pada SFC umumnya dilakukan AOT saat build; runtime compile hanya pada build tertentu.',
+				'Compile berjalan lewat parse, transform, lalu codegen menjadi render function. Pada SFC + Vite/CLI biasanya terjadi saat build (AOT). Pada runtime compiler, compile biasanya terjadi sekali saat template pertama diproses. Pada update state normal, alur biasanya melompat ke render effect lalu patch.',
 			metric: `AST ${beforeResult.astNodeCount} -> ${afterResult.astNodeCount}`,
 			leftTitle: 'AST Summary (Awal)',
 			rightTitle: 'AST Summary (Akhir)',
@@ -892,8 +895,8 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 				id: def.id,
 				type: 'process-stage',
 				position: {
-					x: currentMainIndex * 380 + 24,
-					y: currentSubIndex * 180 + 24,
+					x: currentMainIndex * PROCESS_STAGE_X_GAP + PROCESS_STAGE_CANVAS_PADDING,
+					y: currentSubIndex * PROCESS_STAGE_Y_GAP + PROCESS_STAGE_CANVAS_PADDING,
 				},
 				draggable: false,
 				selectable: true,

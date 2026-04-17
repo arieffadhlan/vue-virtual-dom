@@ -31,7 +31,6 @@ const {
 	isProcessExpanded,
 	isProcessPlaying,
 	processSpeedMs,
-	processStepIndex,
 	processError,
 	processStages,
 	activeStageIndex,
@@ -72,37 +71,49 @@ const graphStats = computed(() => {
 
 const guideItems = [
 	{
-		title: 'Tree Path',
-		description: 'Alamat node di pohon AST. Contoh 0.1.2 artinya child ke-2 dari node 0.1.',
-	},
-	{
-		title: 'Static Node',
+		title: 'Abstract Syntax Tree (AST)',
 		description:
-			'Tidak membawa ketergantungan reaktif langsung. Umumnya tidak perlu update ulang saat state berubah.',
+			'AST adalah struktur data bertingkat yang mewakili template Vue dalam bentuk objek, bukan string HTML mentah.',
 	},
 	{
-		title: 'Dynamic Node',
+		title: 'Render Function',
 		description:
-			'Membawa binding/ekspresi/percabangan/list rendering. Node ini berpotensi dipatch saat state berubah.',
+			'Render function adalah hasil compile dari template. Fungsi ini mengembalikan Virtual DOM tree untuk mount dan update.',
 	},
 	{
-		title: 'Max Depth',
+		title: 'Virtual DOM Tree',
 		description:
-			'Kedalaman terbesar dari node mana pun di tree. Semakin tinggi, semakin kompleks nested hirarkinya.',
+			'Virtual DOM adalah representasi UI di memori. Runtime membandingkan tree lama dan tree baru sebelum patch ke DOM nyata.',
 	},
 	{
-		title: 'Classification',
+		title: 'Dependency Tracking',
 		description:
-			'static biasanya tidak berubah saat state update, dynamic berpotensi di-patch ulang.',
+			'Ketika render membaca state reaktif, Vue mencatat dependensi. Saat dependensi berubah, component effect ditandai untuk re-render.',
 	},
 	{
-		title: 'Patch Flag',
+		title: 'Scheduler Queue',
 		description:
-			'Hint dari compiler agar renderer update bagian yang tepat tanpa kerja berlebih.',
+			'Vue membatch update dalam microtask queue agar banyak perubahan beruntun tidak memicu render berulang yang tidak perlu.',
 	},
 	{
-		title: 'Source Range',
-		description: 'Posisi line/column node pada template, membantu melacak asal perubahan.',
+		title: 'Patch Flags',
+		description:
+			'Patch flags adalah hint dari compiler tentang bagian mana yang dinamis, sehingga runtime bisa update secara spesifik dan cepat.',
+	},
+	{
+		title: 'Tree Flattening dan Block',
+		description:
+			'Vue melacak dynamic descendants di dalam block tree, sehingga proses diff fokus pada bagian dinamis tanpa menelusuri semua node.',
+	},
+	{
+		title: 'Static Node dan Dynamic Node',
+		description:
+			'Static node biasanya stabil. Dynamic node membawa binding atau ekspresi yang berpotensi berubah saat state diperbarui.',
+	},
+	{
+		title: 'Tree Path dan Source Range',
+		description:
+			'Tree path menunjukkan posisi node di hierarki, sedangkan source range menunjukkan line dan column agar mudah melacak asal kode.',
 	},
 ]
 
@@ -404,7 +415,7 @@ onUnmounted(() => {
 			</header>
 			<div v-show="isGuideExpanded" class="bg-[var(--color-background-raised)]/20 p-4">
 				<ul
-					class="m-0 grid list-none grid-cols-1 gap-4 p-0 text-[0.78rem] md:grid-cols-2 xl:grid-cols-4"
+					class="m-0 grid list-none grid-cols-1 gap-4 p-0 text-[0.78rem] md:grid-cols-2 xl:grid-cols-3"
 				>
 					<li
 						v-for="item in guideItems"
@@ -415,9 +426,9 @@ onUnmounted(() => {
 							class="mb-1 block text-[0.82rem] text-[var(--color-text-ds)] transition-colors group-hover:text-[var(--color-brand)]"
 							>{{ item.title }}</strong
 						>
-						<span class="leading-relaxed text-[var(--color-text-dim)]">{{
-							item.description
-						}}</span>
+						<p class="!text-justify text-sm leading-relaxed text-[var(--color-text-dim)]">
+							{{ item.description }}
+						</p>
 					</li>
 				</ul>
 			</div>
@@ -446,8 +457,8 @@ onUnmounted(() => {
 			<p
 				class="m-0 border-t border-[var(--color-border-ds)] bg-[var(--color-background-raised)] px-4 py-2 text-[0.75rem] text-[var(--color-text-dim)]"
 			>
-				Auto-closing tag aktif. Suggestions: v-if, v-for, :class, dll. Scroll horizontal
-				jika code panjang.
+				Auto-closing tag aktif. Contoh suggestion: v-if, v-for, dan :class. Scroll
+				horizontal jika kode panjang.
 			</p>
 			<p
 				v-if="vdomStore.parseError"
