@@ -7,7 +7,27 @@ const props = defineProps<NodeProps<VDomFlowNodeData>>()
 
 const { data, selected } = props
 
+const simulationBadgeByMark: Partial<Record<VDomSimulationMark, string>> = {
+	'compile-target': 'Compile Target',
+	'render-target': 'Render Target',
+	'diff-added': 'Added',
+	'diff-changed': 'Changed',
+	'patch-commit': 'Patched',
+}
+
+const simulationHighlightClassByMark: Partial<Record<VDomSimulationMark, string>> = {
+	'compile-target': 'ring-2 ring-violet-500 shadow-[0_0_0_1px_rgba(139,92,246,0.35)]',
+	'render-target': 'ring-2 ring-violet-500 shadow-[0_0_0_1px_rgba(139,92,246,0.35)]',
+	'diff-added': 'ring-2 ring-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.35)]',
+	'diff-changed': 'ring-2 ring-amber-500 shadow-[0_0_0_1px_rgba(245,158,11,0.35)]',
+	'patch-commit': 'ring-2 ring-sky-500 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]',
+}
+
 const nodeTooltip = computed(() => {
+	if (selected) {
+		return undefined
+	}
+
 	const hint = data.expression ?? data.textContent ?? data.sourcePreview
 
 	return [
@@ -22,42 +42,23 @@ const nodeTooltip = computed(() => {
 })
 
 const simulationBadge = computed(() => {
-	const labelByMark: Record<VDomSimulationMark, string> = {
-		none: '',
-		'compile-target': 'Compile Target',
-		'render-target': 'Render Target',
-		'diff-added': 'Added',
-		'diff-changed': 'Changed',
-		'patch-commit': 'Patched',
-	}
-
 	const mark = data.simulationMark
 
 	if (!mark || mark === 'none') {
 		return null
 	}
 
-	return labelByMark[mark]
+	return simulationBadgeByMark[mark] ?? null
 })
 
 const simulationHighlightClass = computed(() => {
-	if (!data.simulationMark || data.simulationMark === 'none') {
+	const mark = data.simulationMark
+
+	if (!mark || mark === 'none') {
 		return ''
 	}
 
-	if (data.simulationMark === 'diff-added') {
-		return 'ring-2 ring-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.35)]'
-	}
-
-	if (data.simulationMark === 'diff-changed') {
-		return 'ring-2 ring-amber-500 shadow-[0_0_0_1px_rgba(245,158,11,0.35)]'
-	}
-
-	if (data.simulationMark === 'patch-commit') {
-		return 'ring-2 ring-sky-500 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]'
-	}
-
-	return 'ring-2 ring-violet-500 shadow-[0_0_0_1px_rgba(139,92,246,0.35)]'
+	return simulationHighlightClassByMark[mark] ?? ''
 })
 </script>
 

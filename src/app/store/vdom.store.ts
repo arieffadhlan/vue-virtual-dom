@@ -175,6 +175,10 @@ export const useVdomStore = defineStore('vdom', () => {
 			const previousSelectedTreePath = selectedNodeData.value?.treePath ?? null
 			const previousSelectedNodeId = selectedNodeId.value
 			const result = parser.parseTemplate(template)
+			const nextNodeIds = new Set(result.nodes.map((node) => node.id))
+			const nextNodeIdByTreePath = new Map(
+				result.nodes.map((node) => [node.data.treePath, node.id] as const),
+			)
 
 			ast.value = result.ast
 			flowNodes.value = result.nodes
@@ -183,23 +187,18 @@ export const useVdomStore = defineStore('vdom', () => {
 			if (result.nodes.length === 0) {
 				selectedNodeId.value = null
 			} else if (previousSelectedTreePath) {
-				const matchedNode = result.nodes.find(
-					(node) => node.data.treePath === previousSelectedTreePath,
-				)
+				const matchedNodeId = nextNodeIdByTreePath.get(previousSelectedTreePath)
 
-				if (matchedNode) {
-					selectedNodeId.value = matchedNode.id
-				} else if (
-					previousSelectedNodeId &&
-					result.nodes.some((node) => node.id === previousSelectedNodeId)
-				) {
+				if (matchedNodeId) {
+					selectedNodeId.value = matchedNodeId
+				} else if (previousSelectedNodeId && nextNodeIds.has(previousSelectedNodeId)) {
 					selectedNodeId.value = previousSelectedNodeId
 				} else {
 					selectedNodeId.value = null
 				}
 			} else if (
 				!previousSelectedNodeId ||
-				!result.nodes.some((node) => node.id === previousSelectedNodeId)
+				!nextNodeIds.has(previousSelectedNodeId)
 			) {
 				selectedNodeId.value = null
 			}
@@ -221,8 +220,8 @@ export const useVdomStore = defineStore('vdom', () => {
 	}
 
 	async function initialize(): Promise<void> {
-		startTemplateWatcher()
 		await hydrateSnippets()
+		startTemplateWatcher()
 	}
 
 	async function createSnippet(name: string): Promise<void> {

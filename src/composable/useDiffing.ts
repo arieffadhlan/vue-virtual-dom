@@ -1,33 +1,42 @@
 import type { VDomDiffResult, VDomFlowNode } from '@/app/types/vdom.type'
 
 export function useDiffing() {
+	function hasNodeChanged(previousNode: VDomFlowNode, nextNode: VDomFlowNode): boolean {
+		return (
+			previousNode.data.patchFlag !== nextNode.data.patchFlag ||
+			previousNode.data.classification !== nextNode.data.classification ||
+			previousNode.data.label !== nextNode.data.label
+		)
+	}
+
 	function diffNodes(previousNodes: VDomFlowNode[], nextNodes: VDomFlowNode[]): VDomDiffResult {
-		const previousMap = new Map(previousNodes.map((node) => [node.id, node]))
-		const nextMap = new Map(nextNodes.map((node) => [node.id, node]))
+		const previousById = new Map(previousNodes.map((node) => [node.id, node]))
+		const nextNodeIds = new Set<string>()
 
-		const addedNodeIds = nextNodes
-			.filter((node) => !previousMap.has(node.id))
-			.map((node) => node.id)
+		const addedNodeIds: string[] = []
+		const changedNodeIds: string[] = []
 
-		const removedNodeIds = previousNodes
-			.filter((node) => !nextMap.has(node.id))
-			.map((node) => node.id)
+		for (const nextNode of nextNodes) {
+			nextNodeIds.add(nextNode.id)
+			const previousNode = previousById.get(nextNode.id)
 
-		const changedNodeIds = nextNodes
-			.filter((node) => {
-				const previousNode = previousMap.get(node.id)
+			if (!previousNode) {
+				addedNodeIds.push(nextNode.id)
+				continue
+			}
 
-				if (!previousNode) {
-					return false
-				}
+			if (hasNodeChanged(previousNode, nextNode)) {
+				changedNodeIds.push(nextNode.id)
+			}
+		}
 
-				return (
-					previousNode.data.patchFlag !== node.data.patchFlag ||
-					previousNode.data.classification !== node.data.classification ||
-					previousNode.data.label !== node.data.label
-				)
-			})
-			.map((node) => node.id)
+		const removedNodeIds: string[] = []
+
+		for (const previousNode of previousNodes) {
+			if (!nextNodeIds.has(previousNode.id)) {
+				removedNodeIds.push(previousNode.id)
+			}
+		}
 
 		return {
 			addedNodeIds,

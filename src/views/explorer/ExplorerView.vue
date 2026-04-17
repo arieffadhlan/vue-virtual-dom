@@ -54,17 +54,23 @@ const isFlowFullscreen = computed(() => isNativeFullscreen.value || isFallbackFu
 
 const graphStats = computed(() => {
 	const allNodes = vdomStore.flowNodes
-	const dynamicNodes = allNodes.filter((node) => node.data.classification === 'dynamic').length
-	const staticNodes = allNodes.length - dynamicNodes
-	const maxDepth = allNodes.reduce(
-		(highestDepth, node) => Math.max(highestDepth, node.data.depth),
-		0,
-	)
+	let dynamicNodes = 0
+	let maxDepth = 0
+
+	for (const node of allNodes) {
+		if (node.data.classification === 'dynamic') {
+			dynamicNodes += 1
+		}
+
+		if (node.data.depth > maxDepth) {
+			maxDepth = node.data.depth
+		}
+	}
 
 	return {
 		total: allNodes.length,
 		dynamic: dynamicNodes,
-		static: staticNodes,
+		static: allNodes.length - dynamicNodes,
 		maxDepth,
 	}
 })

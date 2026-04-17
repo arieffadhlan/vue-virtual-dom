@@ -576,6 +576,16 @@ function createFallbackAnalysis(source: string, errorMessage: string): TemplateA
 	}
 }
 
+function toStageMetricMap(stages: ProcessFlowStage[]): Map<ProcessPhaseKey, string> {
+	const metricByStageKey = new Map<ProcessPhaseKey, string>()
+
+	for (const stage of stages) {
+		metricByStageKey.set(stage.key, stage.metric)
+	}
+
+	return metricByStageKey
+}
+
 export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcessFlowOptions) {
 	const parser = useVdomParser()
 
@@ -638,6 +648,8 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 	function buildStages(
 		beforeResult: TemplateAnalysisResult,
 		afterResult: TemplateAnalysisResult,
+		beforeSnapshot: ProcessNodeSnapshot[],
+		afterSnapshot: ProcessNodeSnapshot[],
 		changes: ProcessNodeChanges,
 	): ProcessFlowStage[] {
 		const sourceLeft = beforeResult.source.length > 0 ? beforeResult.source : '(empty source)'
@@ -682,8 +694,6 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 			rightText: afterResult.renderCodeText,
 		}
 
-		const beforeSnapshot = toSnapshot(beforeResult.nodes)
-		const afterSnapshot = toSnapshot(afterResult.nodes)
 		const diffStage: ProcessStageDraft = {
 			key: 'diff',
 			title: '4. Diff / Reconciliation',
@@ -735,8 +745,16 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 
 		processError.value = errorMessages.length > 0 ? errorMessages.join(' | ') : null
 
-		const changes = diffSnapshots(toSnapshot(beforeResult.nodes), toSnapshot(afterResult.nodes))
-		processStages.value = buildStages(beforeResult, afterResult, changes)
+		const beforeSnapshot = toSnapshot(beforeResult.nodes)
+		const afterSnapshot = toSnapshot(afterResult.nodes)
+		const changes = diffSnapshots(beforeSnapshot, afterSnapshot)
+		processStages.value = buildStages(
+			beforeResult,
+			afterResult,
+			beforeSnapshot,
+			afterSnapshot,
+			changes,
+		)
 		processStats.value = {
 			beforeNodeCount: beforeResult.nodes.length,
 			afterNodeCount: afterResult.nodes.length,
@@ -879,6 +897,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 	})
 
 	const processFlowNodes = computed<Node<ProcessStageFlowNodeData>[]>(() => {
+		const metricByStageKey = toStageMetricMap(processStages.value)
 		let currentMainIndex = -1
 		let currentSubIndex = 0
 
@@ -890,7 +909,6 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 				currentSubIndex++
 			}
 
-			const dynamicStage = processStages.value.find((s) => s.key === def.stageKey)
 			return {
 				id: def.id,
 				type: 'process-stage',
@@ -905,7 +923,7 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 					title: def.title,
 					subtitle: def.subtitle,
 					summary: def.desc,
-					metric: dynamicStage ? dynamicStage.metric : 'N/A',
+					metric: metricByStageKey.get(def.stageKey) ?? 'N/A',
 					isActive: processStepIndex.value === index,
 					isMain: def.isMain,
 					stageKey: def.stageKey,
