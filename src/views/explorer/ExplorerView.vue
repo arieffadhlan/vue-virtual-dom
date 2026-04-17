@@ -9,48 +9,22 @@ import ProcessFlowSection from '@/components/explorer/ProcessFlowSection.vue'
 import CustomNode from '@/components/flow/CustomNode.vue'
 import VNodeDetails from '@/components/flow/VNodeDetails.vue'
 import type { EditorView as CodeMirrorEditorView } from 'codemirror'
+import Button from '@/components/app/Button.vue'
 
 const vdomStore = useVdomStore()
 const editorElement = ref<HTMLDivElement | null>(null)
 const flowPanelElement = ref<HTMLElement | null>(null)
 const editorView = shallowRef<CodeMirrorEditorView | null>(null)
 const isNativeFullscreen = ref(false)
-const isFallbackFullscreen = ref(false)
-const isGuideExpanded = ref(true)
 const isDetailsExpanded = ref(true)
 const processSourceBefore = ref('')
 const processSourceAfter = computed({
 	get: () => vdomStore.templateSource,
-	set: (nextSource: string) => {
-		vdomStore.setTemplateSource(nextSource)
-	},
+	set: (nextSource: string) => vdomStore.setTemplateSource(nextSource)
 })
+
 const isProcessSourceBeforeSeeded = ref(false)
-
-const {
-	isProcessExpanded,
-	isProcessPlaying,
-	processSpeedMs,
-	processError,
-	processStages,
-	activeStageIndex,
-	activeProcessStep,
-	processStats,
-	processFlowNodes,
-	processFlowEdges,
-	toggleProcessPlayback,
-	nextProcessStep,
-	previousProcessStep,
-	resetProcessStep,
-	jumpToProcessStep,
-	jumpToProcessStepByKey,
-	stop: stopProcessFlow,
-} = useVdomProcessFlow({
-	sourceBefore: processSourceBefore,
-	sourceAfter: processSourceAfter,
-})
-
-const isFlowFullscreen = computed(() => isNativeFullscreen.value || isFallbackFullscreen.value)
+const isFlowFullscreen = computed(() => isNativeFullscreen.value)
 
 const graphStats = computed(() => {
 	const allNodes = vdomStore.flowNodes
@@ -68,58 +42,71 @@ const graphStats = computed(() => {
 	}
 
 	return {
-		total: allNodes.length,
+		total  : allNodes.length,
+		statics: allNodes.length - dynamicNodes,
 		dynamic: dynamicNodes,
-		static: allNodes.length - dynamicNodes,
 		maxDepth,
 	}
+})
+
+const {
+	processError,
+	processStats,
+	isProcessExpanded,
+	activeProcessStep,
+	processStages,
+	isProcessPlaying,
+	activeStageIndex,
+	processFlowNodes,
+	processFlowEdges,
+	processSpeedMs,
+	jumpToProcessStep,
+	jumpToProcessStepByKey,
+	nextProcessStep,
+	previousProcessStep,
+	resetProcessStep,
+	toggleProcessPlayback,
+	stop: stopProcessFlow,
+} = useVdomProcessFlow({
+	sourceBefore: processSourceBefore, sourceAfter: processSourceAfter
 })
 
 const guideItems = [
 	{
 		title: 'Abstract Syntax Tree (AST)',
-		description:
-			'AST adalah struktur data bertingkat yang mewakili template Vue dalam bentuk objek, bukan string HTML mentah.',
+		description: 'AST adalah representasi terstruktur dari template Vue dalam bentuk tree objek JavaScript. Setiap elemen, atribut, dan ekspresi template diubah menjadi "node" dalam pohon ini.',
 	},
 	{
 		title: 'Render Function',
-		description:
-			'Render function adalah hasil compile dari template. Fungsi ini mengembalikan Virtual DOM tree untuk mount dan update.',
+		description: 'Render function adalah fungsi JavaScript hasil compile dari template. Fungsi ini dipanggil oleh Vue renderer setiap kali komponen perlu dirender ulang, dan mengembalikan Virtual DOM tree (kumpulan VNode).',
 	},
 	{
 		title: 'Virtual DOM Tree',
-		description:
-			'Virtual DOM adalah representasi UI di memori. Runtime membandingkan tree lama dan tree baru sebelum patch ke DOM nyata.',
+		description: 'Virtual DOM adalah representasi dari UI yang disimpan di memori JavaScript — bukan DOM nyata di browser. VDOM disusun sebagai tree VNode. Vue membandingkan tree lama vs tree baru untuk menentukan perubahan minimum yang perlu diterapkan ke DOM asli.',
 	},
 	{
 		title: 'Dependency Tracking',
-		description:
-			'Ketika render membaca state reaktif, Vue mencatat dependensi. Saat dependensi berubah, component effect ditandai untuk re-render.',
+		description: 'Saat render function dijalankan dan membaca reactive state (misal ref atau reactive), Vue secara otomatis mencatat bahwa komponen ini "bergantung" pada state tersebut. Kalau state berubah, komponen ditandai untuk di-render ulang.',
 	},
 	{
 		title: 'Scheduler Queue',
-		description:
-			'Vue membatch update dalam microtask queue agar banyak perubahan beruntun tidak memicu render berulang yang tidak perlu.',
+		description: 'Vue tidak langsung re-render saat state berubah. Update dijadwalkan dalam microtask queue. Artinya kalau kamu mengubah 5 state sekaligus dalam satu fungsi, Vue hanya akan render sekali setelah semua perubahan selesai — bukan 5 kali.',
 	},
 	{
 		title: 'Patch Flags',
-		description:
-			'Patch flags adalah hint dari compiler tentang bagian mana yang dinamis, sehingga runtime bisa update secara spesifik dan cepat.',
+		description: 'Patch flags adalah angka numerik yang ditempel compiler pada VNode untuk memberi tahu runtime "bagian mana dari node ini yang bisa berubah." Saat patch, runtime tidak perlu memeriksa semua props — cukup cek yang ditandai saja.',
 	},
 	{
 		title: 'Tree Flattening dan Block',
-		description:
-			'Vue melacak dynamic descendants di dalam block tree, sehingga proses diff fokus pada bagian dinamis tanpa menelusuri semua node.',
+		description: 'Vue memperkenalkan konsep "block" — sebuah VNode khusus yang menyimpan daftar flat dari semua dynamic descendants-nya. Saat update, Vue bisa langsung patch daftar flat ini, tanpa perlu menelusuri seluruh tree secara rekursif.',
 	},
 	{
 		title: 'Static Node dan Dynamic Node',
-		description:
-			'Static node biasanya stabil. Dynamic node membawa binding atau ekspresi yang berpotensi berubah saat state diperbarui.',
+		description: 'Static node adalah elemen template yang tidak mengandung binding atau ekspresi — tidak akan pernah berubah. Dynamic node mengandung binding reaktif seperti :class, v-if, {{ expr }}, dan perlu dicek saat update. Static node di-hoist keluar dari render function agar tidak dibuat ulang setiap render.',
 	},
 	{
 		title: 'Tree Path dan Source Range',
-		description:
-			'Tree path menunjukkan posisi node di hierarki, sedangkan source range menunjukkan line dan column agar mudah melacak asal kode.',
+		description: 'Tree path adalah jalur posisi sebuah node di dalam hierarki AST — misalnya "anak ke-2 dari anak ke-0 dari root." Source range menyimpan informasi baris dan kolom dari kode sumber asli, berguna untuk error messages dan dev tools agar bisa menunjuk ke lokasi kode yang tepat.',
 	},
 ]
 
@@ -151,15 +138,13 @@ function createTemplateCompletionSource(
 	completeFromList: (list: readonly (string | Completion)[]) => CompletionSource,
 ): CompletionSource {
 	return completeFromList([
-		{ label: 'v-if', type: 'keyword', apply: 'v-if=""' },
-		{ label: 'v-else', type: 'keyword', apply: 'v-else' },
-		{ label: 'v-else-if', type: 'keyword', apply: 'v-else-if=""' },
-		{ label: 'v-for', type: 'keyword', apply: 'v-for="item in items"' },
-		{ label: 'v-bind', type: 'keyword', apply: 'v-bind:' },
-		{ label: 'v-on', type: 'keyword', apply: 'v-on:' },
 		{ label: ':class', type: 'property', apply: ':class=""' },
 		{ label: ':style', type: 'property', apply: ':style=""' },
 		{ label: '@click', type: 'property', apply: '@click=""' },
+		{ label: 'v-on', type: 'keyword', apply: 'v-on:' },
+		{ label: 'v-if', type: 'keyword', apply: 'v-if=""' },
+		{ label: 'v-else-if', type: 'keyword', apply: 'v-else-if=""' },
+		{ label: 'v-else', type: 'keyword', apply: 'v-else' },
 		{ label: '{{ expression }}', type: 'snippet', apply: '{{  }}' },
 	])
 }
@@ -199,15 +184,9 @@ async function mountEditor(): Promise<void> {
 
 	editorView.value = new EditorView({
 		doc: vdomStore.templateSource,
+		parent: editorElement.value,
 		extensions: [
 			basicSetup,
-			html({
-				autoCloseTags: true,
-			}),
-			autocompletion({
-				activateOnTyping: true,
-				override: [htmlCompletionSource, templateCompletionSource],
-			}),
 			EditorView.updateListener.of((update) => {
 				if (!update.docChanged) {
 					return
@@ -215,8 +194,9 @@ async function mountEditor(): Promise<void> {
 
 				vdomStore.setTemplateSource(update.state.doc.toString())
 			}),
+			html({ autoCloseTags: true }),
+			autocompletion({ activateOnTyping: true, override: [htmlCompletionSource, templateCompletionSource] }),
 		],
-		parent: editorElement.value,
 	})
 }
 
@@ -289,8 +269,6 @@ async function toggleFlowFullscreen(): Promise<void> {
 		await panelElement.requestFullscreen()
 		return
 	}
-
-	isFallbackFullscreen.value = !isFallbackFullscreen.value
 }
 
 function handleWindowResize(): void {
@@ -300,10 +278,6 @@ function handleWindowResize(): void {
 function handleWindowKeydown(event: KeyboardEvent): void {
 	if (event.key !== 'Escape') {
 		return
-	}
-
-	if (isFallbackFullscreen.value) {
-		isFallbackFullscreen.value = false
 	}
 }
 
@@ -355,223 +329,102 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<section class="flex h-full flex-col gap-4">
-		<!-- Panduan Belajar (Full Width Top) -->
-		<article
-			class="flex shrink-0 flex-col rounded-xl border border-[var(--color-border-ds)] bg-white shadow-sm transition-all duration-300"
-		>
-			<header
-				class="flex cursor-pointer items-center justify-between gap-3 border-b border-[var(--color-border-ds)] bg-[var(--color-background-ds)]/50 px-4 py-3"
-				@click="isGuideExpanded = !isGuideExpanded"
-			>
-				<div>
-					<h2
-						class="m-0 flex items-center gap-2 text-[0.95rem] font-bold text-[var(--color-text-ds)]"
-					>
-						<i
-							class="pi pi-info-circle text-[0.85rem] text-[var(--color-brand)]"
-							aria-hidden="true"
-						/>
-						Panduan Belajar
-					</h2>
+	<section class="w-full flex-col gap-4 flex h-full">
+		<article class="flex flex-col rounded-xl border-[#D9D9D9] shrink-0 border shadow-sm overflow-hidden bg-white w-full">
+			<div class="w-full flex-col justify-between items-start border-b border-[#D9D9D9] px-4 py-3 gap-1 flex">
+				<div class="flex flex-row items-center gap-2">
+					<i class="text-base text-black mt-[1px] pi pi-info-circle"></i>
+					<p class="text-base font-bold">Panduan</p>
 				</div>
-				<button
-					type="button"
-					class="text-[var(--color-text-dim)] transition-transform duration-300 hover:text-[var(--color-brand)]"
-					:class="{ 'rotate-180': isGuideExpanded }"
-				>
-					<i class="pi pi-chevron-down text-[0.8rem]" aria-hidden="true" />
-				</button>
-			</header>
-			<div v-show="isGuideExpanded" class="bg-[var(--color-background-raised)]/20 p-4">
-				<ul
-					class="m-0 grid list-none grid-cols-1 gap-4 p-0 text-[0.78rem] md:grid-cols-2 xl:grid-cols-3"
-				>
-					<li
-						v-for="item in guideItems"
-						:key="item.title"
-						class="group rounded-lg border border-[var(--color-border-ds)] bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:border-[var(--color-brand)]/40 hover:shadow-md"
-					>
-						<strong
-							class="mb-1 block text-[0.82rem] text-[var(--color-text-ds)] transition-colors group-hover:text-[var(--color-brand)]"
-							>{{ item.title }}</strong
-						>
-						<p class="!text-justify text-sm leading-relaxed text-[var(--color-text-dim)]">
+			</div>
+			<div class="w-fit bg-white p-4">
+				<ul class="grid grid-cols-1 gap-4 list-none md:grid-cols-2 xl:grid-cols-3">
+					<li v-for="item in guideItems" :key="item.title" class="rounded-lg border border-[#D9D9D9] bg-white p-3 shadow-sm">
+						<p class="font-[700] text-sm leading-relaxed mb-1">{{ item.title }}</p>
+						<p class="font-[400] text-sm leading-relaxed text-justify">
 							{{ item.description }}
 						</p>
 					</li>
 				</ul>
 			</div>
 		</article>
-
-		<!-- Template Editor (Full Width Middle) -->
-		<article
-			class="flex shrink-0 flex-col overflow-hidden rounded-xl border border-[var(--color-border-ds)] bg-white shadow-sm transition hover:shadow-md"
-		>
-			<header
-				class="flex items-start justify-between gap-3 border-b border-[var(--color-border-ds)] bg-[var(--color-background-ds)]/50 px-4 py-3"
-			>
-				<div>
-					<h2 class="m-0 text-[1rem] font-bold text-[var(--color-text-ds)]">
-						Template Editor
-					</h2>
-					<p class="m-0 mt-0.5 text-[0.8rem] text-[var(--color-text-faint)]">
-						Tulis template Vue. (Ctrl+Space) untuk autocomplete. Jangan word wrap.
-					</p>
-				</div>
-			</header>
-			<div
-				ref="editorElement"
-				class="editor-shell h-[240px] w-full max-w-[100vw] overflow-x-auto"
-			/>
-			<p
-				class="m-0 border-t border-[var(--color-border-ds)] bg-[var(--color-background-raised)] px-4 py-2 text-[0.75rem] text-[var(--color-text-dim)]"
-			>
-				Auto-closing tag aktif. Contoh suggestion: v-if, v-for, dan :class. Scroll
-				horizontal jika kode panjang.
-			</p>
-			<p
-				v-if="vdomStore.parseError"
-				class="m-0 flex items-center gap-2 border-t border-red-200 bg-red-50 px-4 py-2.5 text-[0.8rem] font-semibold text-red-600"
-			>
-				<i class="pi pi-exclamation-circle text-[0.8rem]" aria-hidden="true" />
+		<article class="flex flex-col rounded-xl border-[#D9D9D9] shrink-0 border shadow-sm overflow-hidden bg-white w-full">
+			<div class="w-full flex-col justify-between items-start border-b border-[#D9D9D9] px-4 py-3 gap-1 flex">
+				<p class="text-[16px] font-[700]">Template Editor</p>
+				<p class="text-[14px] font-[400]">Tulis template Vue. <pre class="inline">(Ctrl+Space)</pre> untuk autocomplete.</p>
+			</div>
+			<div class="editor-shell h-[240px] w-full max-w-[100vw] overflow-auto" ref="editorElement" />
+			<p v-if="vdomStore.parseError" class="m-0 flex border-t px-3.5 py-2.5 font-medium text-sm text-red-600 border-red-200 bg-red-50">
 				{{ vdomStore.parseError }}
 			</p>
 		</article>
-
 		<ProcessFlowSection
 			:is-expanded="isProcessExpanded"
+			:active-step="activeProcessStep"
+			:stages="processStages"
 			:source-before="processSourceBefore"
-			:source-after="processSourceAfter"
 			:process-error="processError"
 			:stats="processStats"
-			:is-playing="isProcessPlaying"
 			:speed-ms="processSpeedMs"
+			:source-after="processSourceAfter"
+			:is-playing="isProcessPlaying"
 			:step-index="activeStageIndex"
-			:stages="processStages"
-			:active-step="activeProcessStep"
 			:flow-nodes="processFlowNodes"
 			:flow-edges="processFlowEdges"
+			@update:speed-ms="processSpeedMs = $event"
 			@update:is-expanded="isProcessExpanded = $event"
 			@update:source-before="processSourceBefore = $event"
 			@update:source-after="processSourceAfter = $event"
-			@set-before-from-after="setProcessBeforeFromAfter"
 			@swap-sources="swapProcessSources"
 			@toggle-playback="toggleProcessPlayback"
+			@flow-node-click="handleProcessFlowNodeClick"
+			@set-before-from-after="setProcessBeforeFromAfter"
+			@reset-step="resetProcessStep"
 			@previous-step="previousProcessStep"
 			@next-step="nextProcessStep"
-			@reset-step="resetProcessStep"
 			@jump-step="jumpToProcessStep"
-			@update:speed-ms="processSpeedMs = $event"
-			@flow-node-click="handleProcessFlowNodeClick"
 		/>
-		<!-- Virtual DOM Graph & Details (Grid at Bottom) -->
-		<div
-			ref="flowPanelElement"
-			class="grid min-h-[400px] flex-1 gap-4"
-			:class="[
+		<div ref="flowPanelElement" class="grid min-h-[400px] flex-1 gap-4" :class="[
 				isDetailsExpanded
 					? 'grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_350px]'
 					: 'grid-cols-1',
 				{
-					'fixed inset-3 z-50 rounded-xl bg-[var(--color-background-ds)] p-4 shadow-2xl':
-						isFlowFullscreen,
+					'fixed inset-3 z-50 rounded-xl p-4 shadow-2xl bg-slate-100': isFlowFullscreen,
 				},
 			]"
 		>
-			<!-- Flow Graph -->
-			<article
-				class="flow-panel flex flex-col overflow-hidden rounded-xl border border-[var(--color-border-ds)] bg-white shadow-sm transition hover:shadow-md"
-				:class="{ 'border-none shadow-none': isFlowFullscreen }"
-			>
-				<header
-					class="flex items-start justify-between gap-3 border-b border-[var(--color-border-ds)] bg-[var(--color-background-ds)]/50 px-4 py-3"
-				>
-					<div>
-						<h2
-							class="m-0 flex items-center gap-2 text-[1rem] font-bold text-[var(--color-text-ds)]"
-						>
-							Virtual DOM Graph
-							<span
-								v-if="!isDetailsExpanded"
-								class="rounded-full border border-[var(--color-brand)]/20 bg-[var(--color-brand)]/10 px-2 py-0.5 text-[0.75rem] font-normal text-[var(--color-brand)]"
-								>Detail Minimized</span
-							>
-						</h2>
-						<p class="m-0 mt-0.5 text-[0.8rem] text-[var(--color-text-faint)]">
-							Visualisasi AST. Klik node untuk analisis detail.
-						</p>
+			<article class="flow-panel flex flex-col border-[#D9D9D9] border rounded-xl overflow-hidden bg-white shadow-sm">
+				<div class="w-full flex-row gap-1 flex border-[#D9D9D9] border-b justify-between items-start px-4 py-3">
+					<div class="flex flex-col gap-1">
+						<p class="text-[16px] font-[700]">Virtual DOM	Tree</p>
+						<p class="text-[14px] font-[400]">Visualisasi struktur AST. Klik pada node untuk untuk melihat detail lebih lengkap.</p>
 					</div>
-					<div class="shrink-0 flex items-center gap-2">
-						<button
-							type="button"
-							class="cursor-pointer rounded-lg border border-[var(--color-border-ds)] bg-white px-3 py-1.5 text-[0.78rem] font-bold text-[var(--color-text-dim)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-ds)]"
-							@click="fitFlowToView"
-						>
-							Fit View
-						</button>
-						<button
-							v-if="!isDetailsExpanded"
-							type="button"
-							class="cursor-pointer rounded-lg border border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 px-3 py-1.5 text-[0.78rem] font-bold text-[var(--color-brand)] transition hover:bg-[var(--color-brand)] hover:text-white"
-							@click="isDetailsExpanded = true"
-						>
-							Show Details
-						</button>
-						<button
-							type="button"
-							class="cursor-pointer rounded-lg border border-transparent bg-[var(--color-brand)] px-3 py-1.5 text-[0.78rem] font-bold text-white transition hover:bg-[var(--color-brand-surface)]"
-							@click="toggleFlowFullscreen"
-						>
-							{{
-								isFlowFullscreen ? 'Tutup Fullscreen' : 'Fullscreen Graph & Details'
-							}}
-						</button>
+					<div class="flex items-center gap-2">
+						<Button variant="outline" @click="fitFlowToView">Fit View</Button>
+						<Button variant="primary" @click="isDetailsExpanded = true" v-if="!isDetailsExpanded">Show Details</Button>
+						<Button variant="primary" @click="toggleFlowFullscreen">
+							{{ isFlowFullscreen ? 'Tutup Fullscreen' : 'Fullscreen Window' }}
+						</Button>
 					</div>
-				</header>
-
-				<div
-					class="flex flex-wrap gap-2 border-b border-[var(--color-border-ds)] bg-[var(--color-background-raised)]/50 px-4 py-2"
-				>
-					<p
-						class="m-0 rounded-md border border-[var(--color-border-ds)] bg-white px-2 py-0.5 text-[0.72rem] font-bold text-[var(--color-text-dim)] shadow-sm"
-						title="Jumlah semua node di AST saat ini."
-					>
-						Total:
-						<span class="text-[var(--color-text-ds)]">{{ graphStats.total }}</span>
-					</p>
-					<p
-						class="m-0 flex items-center gap-1 rounded-md border border-orange-200 bg-[var(--color-dynamic-node)] px-2 py-0.5 text-[0.72rem] font-bold text-orange-800 shadow-sm"
-						title="Node reaktif yang mungkin dieksekusi saat render."
-					>
-						<span class="inline-block h-1.5 w-1.5 rounded-full bg-orange-500"></span>
+				</div>
+				<div class="flex flex-wrap gap-2 border-b border-[#D9D9D9] bg-white px-4 py-2.5">
+					<p class="px-2 py-1 border border-zinc-800 rounded-md text-xs font-medium tracking-wide text-zinc-800 bg-zinc-300/10">Nodes: {{ graphStats.total }}</p>
+					<p class="px-2 py-1 border border-zinc-800 rounded-md text-xs font-medium tracking-wide text-zinc-800 bg-zinc-300/10">Depth Level: {{ graphStats.maxDepth }}</p>
+					<p class="px-2 py-1 border border-rose-800 rounded-md text-xs font-medium tracking-wide text-rose-800 bg-rose-300/10 items-center">Static: {{ graphStats.statics }}</p>
+					<p class="px-2 py-1 border border-blue-800 rounded-md text-xs font-medium tracking-wide text-blue-800 bg-blue-300/10 items-center">
 						Dynamic: {{ graphStats.dynamic }}
 					</p>
-					<p
-						class="m-0 flex items-center gap-1 rounded-md border border-green-200 bg-[var(--color-static-node)] px-2 py-0.5 text-[0.72rem] font-bold text-green-800 shadow-sm"
-						title="Node statis yang aman dari re-render."
-					>
-						<span class="inline-block h-1.5 w-1.5 rounded-full bg-green-500"></span>
-						Static: {{ graphStats.static }}
-					</p>
-					<p
-						class="m-0 rounded-md border border-[var(--color-border-ds)] bg-white px-2 py-0.5 text-[0.72rem] font-bold text-[var(--color-text-dim)] shadow-sm"
-					>
-						Depth:
-						<span class="text-[var(--color-text-ds)]">{{ graphStats.maxDepth }}</span>
-					</p>
 				</div>
-
-				<div class="relative flex-1 overflow-hidden bg-[var(--color-background-ds)]">
+				<div class="relative flex-1 overflow-hidden bg-zinc-100">
 					<VueFlow
 						:nodes="vdomStore.flowNodes"
 						:edges="vdomStore.flowEdges"
 						fit-view-on-init
 						class="flow-canvas h-full w-full"
-						@node-click="handleNodeClick"
-						@pane-click="handlePaneClick"
-						@selection-change="handleSelectionChange"
 						@pane-ready="handlePaneReady"
+						@pane-click="handlePaneClick"
+						@node-click="handleNodeClick"
+						@selection-change="handleSelectionChange"
 					>
 						<template #node-ast="nodeProps">
 							<CustomNode v-bind="nodeProps" />
@@ -579,50 +432,23 @@ onUnmounted(() => {
 					</VueFlow>
 				</div>
 			</article>
-
-			<!-- Details Sub Panel -->
 			<article
 				v-show="isDetailsExpanded"
-				class="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--color-border-ds)] bg-white shadow-sm transition hover:shadow-md"
-				:class="{ 'border-[var(--color-border-strong)]': isFlowFullscreen }"
+				class="flex flex-col border-[#D9D9D9] border rounded-xl overflow-hidden bg-white shadow-sm"
 			>
-				<header
-					class="shrink-0 flex items-center justify-between gap-3 border-b border-[var(--color-border-ds)] bg-[var(--color-background-ds)]/50 px-4 py-3"
-				>
-					<div>
-						<h2
-							class="m-0 flex items-center gap-2 text-[1rem] font-bold text-[var(--color-text-ds)]"
-						>
-							<i
-								class="pi pi-clone text-[0.85rem] text-[var(--color-brand)]"
-								aria-hidden="true"
-							/>
-							VNode Details
-						</h2>
-						<p class="m-0 mt-0.5 text-[0.8rem] text-[var(--color-text-faint)]">
-							Atribut runtime node.
-						</p>
+				<div class="w-full flex-row gap-1 flex border-[#D9D9D9] border-b justify-between items-start px-4 py-3">
+					<div class="flex flex-col gap-1">
+						<p class="text-[16px] font-[700]">VNode Details</p>
+						<p class="text-[14px] font-[400]">Properti dan atribut runtime node terpilih.</p>
 					</div>
-					<button
-						type="button"
-						class="rounded-md p-1 text-[var(--color-text-dim)] transition hover:bg-gray-200 hover:text-[var(--color-text-ds)]"
-						@click="isDetailsExpanded = false"
-						title="Minimize Details"
-					>
-						<i class="pi pi-times text-[0.85rem]" aria-hidden="true" />
+					<button @click="isDetailsExpanded = false" class="cursor-pointer">
+						<i class="pi pi-times text-sm" />
 					</button>
-				</header>
-				<div class="flex-1 overflow-y-auto bg-[var(--color-background-ds)]/30">
-					<div
-						v-if="!vdomStore.selectedNodeData"
-						class="flex h-full min-h-[140px] items-center justify-center px-6 text-center text-[0.85rem] text-[var(--color-text-faint)]"
-					>
-						<div class="flex flex-col items-center gap-2 opacity-70">
-							<i
-								class="pi pi-info-circle text-[1.2rem] text-[var(--color-text-dim)]"
-								aria-hidden="true"
-							/>
-							<span>Pilih node pada graph untuk melihat detailnya di sini.</span>
+				</div>
+				<div class="flex-1 overflow-y-auto bg-white">
+					<div v-if="!vdomStore.selectedNodeData" class="flex items-center justify-center min-h-[140px] h-full px-6 text-center">
+						<div class="flex flex-col items-center gap-2">
+							<p class="text-sm max-w-[240px]">Pilih node pada grafik untuk melihat detailnya di sini.</p>
 						</div>
 					</div>
 					<VNodeDetails v-else :node="vdomStore.selectedNodeData" />

@@ -48,7 +48,7 @@ const statusText = computed(() => {
 					<p
 						class="m-0 text-[0.75rem] font-medium tracking-[0.03em] uppercase text-[var(--color-text-faint)] mt-0.5"
 					>
-						BTJ Dev Tooling
+						Dev Tooling
 					</p>
 				</div>
 			</div>

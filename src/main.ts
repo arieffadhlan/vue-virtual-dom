@@ -6,8 +6,9 @@ import 'primeicons/primeicons.css'
 import '@/style/global.css'
 
 const app = createApp(App)
-const pinia = createPinia()
-app.use(pinia)
+app.use(createPinia())
 app.use(router)
 
-app.mount('#app')
+router.isReady().then(() => {
+  app.mount('#app')
+})

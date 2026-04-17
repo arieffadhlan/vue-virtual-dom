@@ -20,9 +20,6 @@
 	--color-brand: #10b981;
 	--color-brand-surface: #059669;
 	--color-brand-text: #ffffff;
-
-	--color-dynamic-node: #fed7aa;
-	--color-static-node: #bbf7d0;
 }
 
 body {
@@ -36,20 +33,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
-::-webkit-scrollbar-track {
-	background: transparent;
-}
-::-webkit-scrollbar-thumb {
-	background: var(--color-border-strong);
-	border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: var(--color-text-faint);
-}
+
 
 #app {
 	display: flex;
@@ -60,8 +44,6 @@ body {
 .cm-editor {
 	height: 100%;
 	font-family: var(--font-mono) !important;
-	border-radius: 0.75rem !important;
-	border: 1px solid var(--color-border-ds) !important;
 	background: var(--color-background-surface) !important;
 }
 
@@ -70,12 +52,20 @@ body {
 	font-size: 0.85rem;
 }
 
+.vue-flow .vue-flow__edges {
+	z-index: 1;
+}
+
+.vue-flow .vue-flow__nodes {
+	z-index: 2;
+}
+
 .vue-flow__edge-path {
-	stroke: var(--color-border-strong);
+	stroke: #727272;
 	stroke-width: 2;
 }
 
 .vue-flow__edge.selected .vue-flow__edge-path {
-	stroke: var(--color-brand);
-	stroke-width: 3;
+	stroke: #727272;
+	stroke-width: 2;
 }

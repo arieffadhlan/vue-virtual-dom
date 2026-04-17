@@ -7,149 +7,70 @@ const props = defineProps<{
 }>()
 
 const isDynamic = computed(() => {
-	if (!props.node) return false
-	return props.node.classification === 'dynamic'
+	return props.node ? props.node.classification === 'dynamic' : false 
 })
 </script>
 
 <template>
-	<div
-		v-if="!node"
-		class="flex h-full min-h-[140px] items-center justify-center text-center text-[0.8rem] text-[var(--color-text-faint)] px-6"
-	>
+	<div v-if="!node" class="flex items-center justify-center min-h-[140px] h-full px-6 text-center">
 		<div class="flex flex-col items-center gap-2">
-			<i class="pi pi-search text-[1rem] text-[var(--color-text-dim)]" aria-hidden="true" />
-			<p class="m-0">
-				Pilih node pada diagram untuk melihat detail lengkap tentang struktur dan sifat
-				VNode.
-			</p>
+			<p class="text-sm max-w-[240px]">Pilih node pada grafik untuk melihat detailnya di sini.</p>
 		</div>
 	</div>
-	<div v-else class="relative flex h-full flex-col p-4 text-[0.8rem]">
-		<header class="mb-4 flex flex-col gap-2 border-b border-[var(--color-border-ds)] pb-3">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-2">
-					<h3 class="m-0 text-[1.1rem] font-bold text-[var(--color-text-ds)] font-mono">
-						<template v-if="node.tagName">&lt;{{ node.tagName }}&gt;</template>
-						<template v-else>{{ node.label }}</template>
-					</h3>
-					<span
-						class="rounded-md border px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-wider"
-						:class="[
-							isDynamic
-								? 'border-orange-200 bg-orange-50 text-orange-700'
-								: 'border-green-200 bg-green-50 text-green-700',
-						]"
-					>
-						{{ isDynamic ? 'Dynamic' : 'Static' }}
-					</span>
-				</div>
+	<div v-else class="relative flex flex-col h-full p-4">
+		<div class="w-full flex flex-col gap-2 border-b border-[#D9D9D9] pb-3 mb-4">
+			<div class="px-0 flex flex-row gap-2 items-center">
+				<h3 class="font-bold font-mono">
+					<template v-if="node.tagName">&lt;{{ node.tagName }}&gt;</template>
+					<template v-else>{{ node.label }}</template>
+				</h3>
 			</div>
-
 			<div class="inline-flex gap-2">
 				<span
-					class="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-[0.7rem] font-bold text-blue-700"
-					>Type: {{ node.astKind }}</span
+					:class="[
+						isDynamic
+							? 'border-blue-800 text-blue-800 bg-blue-50'
+							: 'border-rose-800 text-rose-800 bg-rose-50'
+					]"
+					class="px-2 py-1 border rounded-md text-xs font-medium tracking-wide flex items-center gap-1"
 				>
-				<span
-					class="rounded bg-black/5 px-2 py-1 text-[0.7rem] font-mono text-[var(--color-text-dim)]"
-					>Depth: {{ node.depth }}</span
-				>
+					{{ isDynamic ? 'Dynamic' : 'Static' }}
+				</span>
+				<span class="px-2 py-1 border border-zinc-800 rounded-md text-xs font-medium tracking-wide text-zinc-800 bg-zinc-300/10">{{ node.astKind }}</span>
+				<span class="px-2 py-1 border border-zinc-800 rounded-md text-xs font-medium tracking-wide text-zinc-800 bg-zinc-300/10">Depth: {{ node.depth }}</span>
 			</div>
-		</header>
-
+		</div>
 		<div class="flex-1 space-y-4 overflow-y-auto pr-1">
-			<section v-if="node.attributeNames && node.attributeNames.length > 0">
-				<h4
-					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
-				>
-					<i class="pi pi-file text-[0.7rem]" aria-hidden="true" />
-					Attributes
-				</h4>
-				<ul
-					class="m-0 list-none space-y-1.5 rounded-lg border border-[var(--color-border-ds)] bg-white p-2 shadow-sm font-mono text-[0.75rem]"
-				>
-					<li
-						v-for="attr in node.attributeNames"
-						:key="attr"
-						class="flex gap-2 border-b border-[var(--color-background-ds)] pb-1 last:border-0 last:pb-0"
-					>
-						<span class="text-[var(--color-brand)] font-semibold shrink-0">{{
-							attr
-						}}</span>
-					</li>
-				</ul>
-			</section>
-
-			<section v-if="node.directiveNames && node.directiveNames.length > 0">
-				<h4
-					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
-				>
-					<i class="pi pi-bolt text-[0.7rem]" aria-hidden="true" />
-					Directives
-				</h4>
-				<ul
-					class="m-0 list-none space-y-1.5 rounded-lg border border-orange-100 bg-orange-50/50 p-2 font-mono text-[0.75rem]"
-				>
-					<li
-						v-for="dir in node.directiveNames"
-						:key="dir"
-						class="flex flex-col gap-0.5 border-b border-orange-100 pb-1.5 last:border-0 last:pb-0 font-bold text-orange-600"
-					>
-						{{ dir }}
-					</li>
-				</ul>
-			</section>
-
-			<section v-if="node.textContent">
-				<h4
-					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
-				>
-					<i class="pi pi-align-left text-[0.7rem]" aria-hidden="true" />
-					Text Content
-				</h4>
-				<div
-					class="rounded-lg border border-[var(--color-border-ds)] bg-white p-2.5 shadow-sm font-mono text-[0.75rem] text-[var(--color-text-ds)] break-words"
-				>
+			<div v-if="
+				(node.attributeNames && node.attributeNames.length > 0) || 
+				(node.directiveNames && node.directiveNames.length > 0)" class="flex flex-col gap-2">
+				<div class="flex flex-row items-center gap-2">
+					<i class="text-xs text-black font-bold pi pi-list"></i>
+					<p class="text-xs font-[700] font-mono">ATTR</p>
+				</div>
+				<ol class="p-2 list-disc space-y-1.5 rounded-md font-mono text-xs border border-green-800 bg-green-50/50">
+					<li v-for="attr in node.attributeNames" :key="attr" class="font-bold text-green-800">- {{ attr }}</li>
+					<li v-for="dirc in node.directiveNames" :key="dirc" class="font-bold text-green-800">- {{ dirc }}</li>
+				</ol>
+			</div>
+			<div v-if="node.textContent" class="flex flex-col gap-2">
+				<div class="flex flex-row items-center gap-2">
+					<i class="text-xs text-black font-bold pi pi-align-justify"></i>
+					<p class="text-xs font-[700] font-mono">TEXT CONTENT</p>
+				</div>
+				<div class="p-3 border border-[#D9D9D9] rounded-md font-mono text-xs whitespace-pre bg-zinc-100 overflow-x-auto">
 					{{ node.textContent }}
 				</div>
-			</section>
-
-			<section v-if="node.patchFlag != null && node.patchFlag > 0">
-				<h4
-					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
-				>
-					<i class="pi pi-check-circle text-[0.7rem]" aria-hidden="true" />
-					Patch Flag
-				</h4>
-				<div
-					class="rounded-lg border border-[var(--color-border-ds)] bg-white p-2.5 shadow-sm"
-				>
-					<div class="flex items-end gap-2 mb-1.5">
-						<span
-							class="font-mono text-[1.1rem] font-bold leading-none text-[var(--color-brand)]"
-							>{{ node.patchFlag }}</span
-						>
-					</div>
-					<p class="m-0 text-[0.75rem] text-[var(--color-text-dim)] leading-relaxed">
-						{{
-							node.patchFlagText ||
-							'Tanda bahwa node ini memiliki dynamic binding yang perlu dicek saat re-render.'
-						}}
-					</p>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="flex flex-row items-center gap-2">
+					<i class="text-xs text-black font-bold mt-[1px] pi pi-code"></i>
+					<p class="text-xs font-[700] font-mono">CODE SNIPPET</p>
 				</div>
-			</section>
-
-			<section class="mt-4 pt-3 border-t border-[var(--color-border-ds)]">
-				<h4
-					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
-				>
-					Source Code (Template Snippet)
-				</h4>
-				<pre
-					class="m-0 overflow-x-auto rounded-md bg-[var(--color-background-ds)] p-3 text-[0.74rem] leading-relaxed text-[var(--color-text-ds)] border border-[var(--color-border-ds)] font-mono border-dashed whitespace-pre"
-				><code>{{ node.source || node.sourcePreview || '(source code tidak tersedia)' }}</code></pre>
-			</section>
+				<div class="p-3 border border-[#D9D9D9] rounded-md font-mono text-xs whitespace-pre bg-zinc-100 overflow-x-auto">
+					{{ node.source || node.sourcePreview || '(source code tidak tersedia)' }}
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
