@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useVdomStore } from '@/app/store/vdom.store'
-import Input from '@/components/forms/Input.vue'
+import Input from '@/components/form/Input.vue'
 
 defineOptions({
 	name: 'AppSidebar',
@@ -41,17 +41,7 @@ function createSnippet(): void {
 				class="lg:hidden flex h-8 w-8 items-center justify-center rounded-md border border-[var(--color-border-ds)] transition hover:bg-[var(--color-background-ds)]"
 				@click="emit('close')"
 			>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-				>
-					<line x1="18" y1="6" x2="6" y2="18"></line>
-					<line x1="6" y1="6" x2="18" y2="18"></line>
-				</svg>
+				<i class="pi pi-times text-[0.8rem] text-[var(--color-text-dim)]" aria-hidden="true" />
 			</button>
 		</div>
 
@@ -92,9 +82,6 @@ function createSnippet(): void {
 						<span class="text-[0.85rem] font-semibold text-[var(--color-text-ds)]">{{
 							snippet.name
 						}}</span>
-						<small class="text-[0.67rem] text-[var(--color-text-faint)]">
-							{{ snippet.updatedAt }}
-						</small>
 					</button>
 				</li>
 			</ul>

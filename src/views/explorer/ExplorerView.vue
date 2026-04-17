@@ -378,21 +378,10 @@ onUnmounted(() => {
 					<h2
 						class="m-0 flex items-center gap-2 text-[0.95rem] font-bold text-[var(--color-text-ds)]"
 					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							class="text-[var(--color-brand)]"
-						>
-							<path
-								d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
-							/>
-							<path d="M12 16v-4" />
-							<path d="M12 8h.01" />
-						</svg>
+						<i
+							class="pi pi-info-circle text-[0.85rem] text-[var(--color-brand)]"
+							aria-hidden="true"
+						/>
 						Panduan Belajar
 					</h2>
 				</div>
@@ -401,16 +390,7 @@ onUnmounted(() => {
 					class="text-[var(--color-text-dim)] transition-transform duration-300 hover:text-[var(--color-brand)]"
 					:class="{ 'rotate-180': isGuideExpanded }"
 				>
-					<svg
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<path d="M6 9l6 6 6-6" />
-					</svg>
+					<i class="pi pi-chevron-down text-[0.8rem]" aria-hidden="true" />
 				</button>
 			</header>
 			<div v-show="isGuideExpanded" class="bg-[var(--color-background-raised)]/20 p-4">
@@ -464,18 +444,7 @@ onUnmounted(() => {
 				v-if="vdomStore.parseError"
 				class="m-0 flex items-center gap-2 border-t border-red-200 bg-red-50 px-4 py-2.5 text-[0.8rem] font-semibold text-red-600"
 			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-				>
-					<circle cx="12" cy="12" r="10" />
-					<line x1="12" y1="8" x2="12" y2="12" />
-					<line x1="12" y1="16" x2="12.01" y2="16" />
-				</svg>
+				<i class="pi pi-exclamation-circle text-[0.8rem]" aria-hidden="true" />
 				{{ vdomStore.parseError }}
 			</p>
 		</article>
@@ -634,19 +603,10 @@ onUnmounted(() => {
 						<h2
 							class="m-0 flex items-center gap-2 text-[1rem] font-bold text-[var(--color-text-ds)]"
 						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								class="text-[var(--color-brand)]"
-							>
-								<polygon points="12 2 2 7 12 12 22 7 12 2" />
-								<polyline points="2 17 12 22 22 17" />
-								<polyline points="2 12 12 17 22 12" />
-							</svg>
+							<i
+								class="pi pi-clone text-[0.85rem] text-[var(--color-brand)]"
+								aria-hidden="true"
+							/>
 							VNode Details
 						</h2>
 						<p class="m-0 mt-0.5 text-[0.8rem] text-[var(--color-text-faint)]">
@@ -659,17 +619,7 @@ onUnmounted(() => {
 						@click="isDetailsExpanded = false"
 						title="Minimize Details"
 					>
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-						>
-							<line x1="18" y1="6" x2="6" y2="18"></line>
-							<line x1="6" y1="6" x2="18" y2="18"></line>
-						</svg>
+						<i class="pi pi-times text-[0.85rem]" aria-hidden="true" />
 					</button>
 				</header>
 				<div class="flex-1 overflow-y-auto bg-[var(--color-background-ds)]/30">
@@ -678,19 +628,10 @@ onUnmounted(() => {
 						class="flex h-full min-h-[140px] items-center justify-center px-6 text-center text-[0.85rem] text-[var(--color-text-faint)]"
 					>
 						<div class="flex flex-col items-center gap-2 opacity-70">
-							<svg
-								width="32"
-								height="32"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.5"
-								class="text-[var(--color-text-dim)]"
-							>
-								<circle cx="12" cy="12" r="10"></circle>
-								<line x1="12" y1="8" x2="12" y2="12"></line>
-								<line x1="12" y1="16" x2="12.01" y2="16"></line>
-							</svg>
+							<i
+								class="pi pi-info-circle text-[1.2rem] text-[var(--color-text-dim)]"
+								aria-hidden="true"
+							/>
 							<span>Pilih node pada graph untuk melihat detailnya di sini.</span>
 						</div>
 					</div>

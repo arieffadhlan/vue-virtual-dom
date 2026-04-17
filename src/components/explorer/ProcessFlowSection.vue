@@ -286,21 +286,10 @@ function handleSpeedInput(event: Event): void {
 					<h3
 						class="m-0 text-[0.85rem] font-bold text-[var(--color-text-ds)] flex items-center gap-2"
 					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							class="text-[var(--color-brand)]"
-						>
-							<path
-								d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-							></path>
-							<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-							<line x1="12" y1="22.08" x2="12" y2="12"></line>
-						</svg>
+						<i
+							class="pi pi-share-alt text-[0.85rem] text-[var(--color-brand)]"
+							aria-hidden="true"
+						/>
 						Graph Highlight
 					</h3>
 					<p class="m-0 mt-1 text-[0.75rem] text-[var(--color-text-dim)]">
@@ -312,6 +301,7 @@ function handleSpeedInput(event: Event): void {
 					<VueFlow
 						:nodes="flowNodes"
 						:edges="flowEdges"
+						:node-types="flowNodeTypes"
 						:fit-view-on-init="true"
 						:min-zoom="0.3"
 						:max-zoom="2"

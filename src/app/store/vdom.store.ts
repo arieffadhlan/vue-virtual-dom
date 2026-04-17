@@ -72,7 +72,7 @@ export const useVdomStore = defineStore('vdom', () => {
 			return 'never'
 		}
 
-		return dayjs(lastCompiledAt.value).format('HH:mm:ss')
+		return dayjs(lastCompiledAt.value).format('DD-MM-YYYY, HH:mm:ss')
 	})
 
 	let stopTemplateWatcher: WatchStopHandle | null = null

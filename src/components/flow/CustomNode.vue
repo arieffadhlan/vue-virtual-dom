@@ -99,18 +99,7 @@ const simulationHighlightClass = computed(() => {
 			class="flex justify-between items-center text-[0.7rem] font-semibold text-[var(--color-text-ds)]/80 border-b border-[var(--color-border-strong)]/30 pb-1.5"
 		>
 			<span class="flex items-center gap-1">
-				<svg
-					width="12"
-					height="12"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-				>
-					<circle cx="12" cy="12" r="10" />
-					<path d="M12 16v-4" />
-					<path d="M12 8h.01" />
-				</svg>
+				<i class="pi pi-sitemap text-[0.65rem]" aria-hidden="true" />
 				Path <span>{{ data.treePath }}</span>
 			</span>
 			<span>Depth {{ data.depth }}</span>

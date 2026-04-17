@@ -18,18 +18,7 @@ const isDynamic = computed(() => {
 		class="flex h-full min-h-[140px] items-center justify-center text-center text-[0.8rem] text-[var(--color-text-faint)] px-6"
 	>
 		<div class="flex flex-col items-center gap-2">
-			<svg
-				width="24"
-				height="24"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				class="text-[var(--color-text-dim)]"
-			>
-				<circle cx="11" cy="11" r="8" />
-				<line x1="21" y1="21" x2="16.65" y2="16.65" />
-			</svg>
+			<i class="pi pi-search text-[1rem] text-[var(--color-text-dim)]" aria-hidden="true" />
 			<p class="m-0">
 				Pilih node pada diagram untuk melihat detail lengkap tentang struktur dan sifat
 				VNode.
@@ -74,20 +63,7 @@ const isDynamic = computed(() => {
 				<h4
 					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
 				>
-					<svg
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-						<polyline points="14 2 14 8 20 8" />
-						<line x1="16" y1="13" x2="8" y2="13" />
-						<line x1="16" y1="17" x2="8" y2="17" />
-						<polyline points="10 9 9 9 8 9" />
-					</svg>
+					<i class="pi pi-file text-[0.7rem]" aria-hidden="true" />
 					Attributes
 				</h4>
 				<ul
@@ -109,16 +85,7 @@ const isDynamic = computed(() => {
 				<h4
 					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
 				>
-					<svg
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-					</svg>
+					<i class="pi pi-bolt text-[0.7rem]" aria-hidden="true" />
 					Directives
 				</h4>
 				<ul
@@ -138,18 +105,7 @@ const isDynamic = computed(() => {
 				<h4
 					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
 				>
-					<svg
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<polyline points="4 7 4 4 20 4 20 7" />
-						<line x1="9" y1="20" x2="15" y2="20" />
-						<line x1="12" y1="4" x2="12" y2="20" />
-					</svg>
+					<i class="pi pi-align-left text-[0.7rem]" aria-hidden="true" />
 					Text Content
 				</h4>
 				<div
@@ -163,17 +119,7 @@ const isDynamic = computed(() => {
 				<h4
 					class="mb-1.5 flex items-center gap-1.5 text-[0.75rem] font-bold uppercase tracking-wide text-[var(--color-text-dim)]"
 				>
-					<svg
-						width="12"
-						height="12"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-						<polyline points="22 4 12 14.01 9 11.01" />
-					</svg>
+					<i class="pi pi-check-circle text-[0.7rem]" aria-hidden="true" />
 					Patch Flag
 				</h4>
 				<div
@@ -201,7 +147,7 @@ const isDynamic = computed(() => {
 					Source Code (Template Snippet)
 				</h4>
 				<pre
-					class="m-0 max-h-[280px] overflow-auto rounded-md bg-[var(--color-background-ds)] p-3 text-[0.74rem] leading-relaxed text-[var(--color-text-ds)] border border-[var(--color-border-ds)] font-mono border-dashed whitespace-pre-wrap break-words"
+					class="m-0 overflow-x-auto rounded-md bg-[var(--color-background-ds)] p-3 text-[0.74rem] leading-relaxed text-[var(--color-text-ds)] border border-[var(--color-border-ds)] font-mono border-dashed whitespace-pre"
 				><code>{{ node.source || node.sourcePreview || '(source code tidak tersedia)' }}</code></pre>
 			</section>
 		</div>
