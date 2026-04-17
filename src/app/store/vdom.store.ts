@@ -16,7 +16,7 @@ import type {
 } from '@/app/types/vdom.type'
 import { useDiffing } from '@/composable/useDiffing'
 import { useVdomParser } from '@/composable/useVdomParser'
-import { dayjs } from '@/libs/dayjs'
+import dayjs from 'dayjs'
 import { debounce } from '@/utils/debounce'
 
 const EMPTY_DIFF_RESULT: VDomDiffResult = {
@@ -98,13 +98,7 @@ export const useVdomStore = defineStore('vdom', () => {
 			return
 		}
 
-		stopTemplateWatcher = watch(
-			templateSource,
-			(nextTemplate) => {
-				debouncedCompile(nextTemplate)
-			},
-			{ immediate: true },
-		)
+		stopTemplateWatcher = watch(templateSource, debouncedCompile, { immediate: true })
 	}
 
 	function upsertSnippet(snippet: TemplateSnippet): void {
@@ -186,21 +180,16 @@ export const useVdomStore = defineStore('vdom', () => {
 
 			if (result.nodes.length === 0) {
 				selectedNodeId.value = null
-			} else if (previousSelectedTreePath) {
-				const matchedNodeId = nextNodeIdByTreePath.get(previousSelectedTreePath)
+			} else {
+				const selectedNodeIdFromTreePath = previousSelectedTreePath
+					? nextNodeIdByTreePath.get(previousSelectedTreePath) ?? null
+					: null
 
-				if (matchedNodeId) {
-					selectedNodeId.value = matchedNodeId
-				} else if (previousSelectedNodeId && nextNodeIds.has(previousSelectedNodeId)) {
-					selectedNodeId.value = previousSelectedNodeId
-				} else {
-					selectedNodeId.value = null
-				}
-			} else if (
-				!previousSelectedNodeId ||
-				!nextNodeIds.has(previousSelectedNodeId)
-			) {
-				selectedNodeId.value = null
+				selectedNodeId.value =
+					selectedNodeIdFromTreePath ??
+					(previousSelectedNodeId && nextNodeIds.has(previousSelectedNodeId)
+						? previousSelectedNodeId
+						: null)
 			}
 
 			latestDiff.value = diffing.diffNodes(previousNodes, result.nodes)

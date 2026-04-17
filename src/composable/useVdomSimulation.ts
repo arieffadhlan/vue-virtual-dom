@@ -186,13 +186,13 @@ export function useVdomSimulation({
 				continue
 			}
 
-			const changedIdentity =
+			const isNodeChanged =
 				previousNode.label !== nextNode.label ||
 				previousNode.classification !== nextNode.classification ||
 				previousNode.patchFlagText !== nextNode.patchFlagText ||
 				previousNode.astKind !== nextNode.astKind
 
-			if (changedIdentity) {
+			if (isNodeChanged) {
 				changed.push({
 					id: nextNode.id,
 					treePath: nextNode.treePath,
@@ -415,32 +415,37 @@ export function useVdomSimulation({
 			.filter((id): id is string => Boolean(id))
 		const impactedNodeIds = [...new Set([...addedNodeIds, ...changedNodeIds])]
 
-		if (step.key === 'compile') {
-			for (const nodeId of impactedNodeIds) {
-				markByNodeId.set(nodeId, 'compile-target')
+		switch (step.key) {
+			case 'compile': {
+				for (const nodeId of impactedNodeIds) {
+					markByNodeId.set(nodeId, 'compile-target')
+				}
+				break
 			}
-		}
+			case 'render': {
+				for (const nodeId of impactedNodeIds) {
+					markByNodeId.set(nodeId, 'render-target')
+				}
+				break
+			}
+			case 'diff': {
+				for (const nodeId of changedNodeIds) {
+					markByNodeId.set(nodeId, 'diff-changed')
+				}
 
-		if (step.key === 'render') {
-			for (const nodeId of impactedNodeIds) {
-				markByNodeId.set(nodeId, 'render-target')
+				for (const nodeId of addedNodeIds) {
+					markByNodeId.set(nodeId, 'diff-added')
+				}
+				break
 			}
-		}
-
-		if (step.key === 'diff') {
-			for (const nodeId of changedNodeIds) {
-				markByNodeId.set(nodeId, 'diff-changed')
+			case 'patch': {
+				for (const nodeId of impactedNodeIds) {
+					markByNodeId.set(nodeId, 'patch-commit')
+				}
+				break
 			}
-
-			for (const nodeId of addedNodeIds) {
-				markByNodeId.set(nodeId, 'diff-added')
-			}
-		}
-
-		if (step.key === 'patch') {
-			for (const nodeId of impactedNodeIds) {
-				markByNodeId.set(nodeId, 'patch-commit')
-			}
+			default:
+				break
 		}
 
 		return markByNodeId

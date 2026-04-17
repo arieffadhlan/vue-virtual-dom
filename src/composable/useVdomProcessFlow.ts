@@ -237,6 +237,18 @@ const FALLBACK_SOURCE = '<div />'
 const PROCESS_STAGE_X_GAP = 350
 const PROCESS_STAGE_Y_GAP = 216
 const PROCESS_STAGE_CANVAS_PADDING = 24
+const EMPTY_PROCESS_STAGE: ProcessFlowStage = {
+	key: 'source-update',
+	title: '1. Source Update',
+	subtitle: 'Kode awal -> kode akhir',
+	summary: 'Belum ada data untuk dianalisis.',
+	metric: 'N/A',
+	leftTitle: 'Kode Awal',
+	rightTitle: 'Kode Akhir',
+	leftText: '',
+	rightText: '',
+	diffLines: [],
+}
 
 function normalizeTemplateSource(source: string): string {
 	return source.trim().length > 0 ? source : FALLBACK_SOURCE
@@ -576,16 +588,6 @@ function createFallbackAnalysis(source: string, errorMessage: string): TemplateA
 	}
 }
 
-function toStageMetricMap(stages: ProcessFlowStage[]): Map<ProcessPhaseKey, string> {
-	const metricByStageKey = new Map<ProcessPhaseKey, string>()
-
-	for (const stage of stages) {
-		metricByStageKey.set(stage.key, stage.metric)
-	}
-
-	return metricByStageKey
-}
-
 export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcessFlowOptions) {
 	const parser = useVdomParser()
 
@@ -732,7 +734,6 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 	function recomputeProcessFlow(): void {
 		const beforeResult = analyzeTemplate(sourceBefore.value)
 		const afterResult = analyzeTemplate(sourceAfter.value)
-
 		const errorMessages: string[] = []
 
 		if (beforeResult.error) {
@@ -879,25 +880,16 @@ export function useVdomProcessFlow({ sourceBefore, sourceAfter }: UseVdomProcess
 	})
 
 	const activeProcessStep = computed<ProcessFlowStage>(() => {
-		return (
-			processStages.value[activeStageIndex.value] ??
-			processStages.value[0] ?? {
-				key: 'source-update',
-				title: '1. Source Update',
-				subtitle: 'Kode awal -> kode akhir',
-				summary: 'Belum ada data untuk dianalisis.',
-				metric: 'N/A',
-				leftTitle: 'Kode Awal',
-				rightTitle: 'Kode Akhir',
-				leftText: '',
-				rightText: '',
-				diffLines: [],
-			}
-		)
+		return processStages.value[activeStageIndex.value] ?? processStages.value[0] ?? EMPTY_PROCESS_STAGE
 	})
 
 	const processFlowNodes = computed<Node<ProcessStageFlowNodeData>[]>(() => {
-		const metricByStageKey = toStageMetricMap(processStages.value)
+		const metricByStageKey = new Map<ProcessPhaseKey, string>()
+
+		for (const stage of processStages.value) {
+			metricByStageKey.set(stage.key, stage.metric)
+		}
+
 		let currentMainIndex = -1
 		let currentSubIndex = 0
 

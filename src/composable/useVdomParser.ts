@@ -103,102 +103,91 @@ function parseElementMeta(node: ElementNode): {
 }
 
 function extractNodePresentationMeta(node: TraversableNode): NodePresentationMeta {
-	if (node.type === NodeTypes.ELEMENT) {
-		const elementMeta = parseElementMeta(node)
+	const sourcePreview = truncateText(compactWhitespace(node.loc.source))
 
-		return {
-			tagName: node.tag,
-			expression: null,
-			textContent: null,
-			directiveNames: elementMeta.directiveNames,
-			attributeNames: elementMeta.attributeNames,
-			hasDynamicBindings: elementMeta.hasDynamicBindings,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
+	switch (node.type) {
+		case NodeTypes.ELEMENT: {
+			const elementMeta = parseElementMeta(node)
+
+			return {
+				tagName: node.tag,
+				expression: null,
+				textContent: null,
+				directiveNames: elementMeta.directiveNames,
+				attributeNames: elementMeta.attributeNames,
+				hasDynamicBindings: elementMeta.hasDynamicBindings,
+				sourcePreview,
+			}
 		}
-	}
+		case NodeTypes.INTERPOLATION:
+			return {
+				tagName: null,
+				expression: parseInterpolationExpression(node),
+				textContent: null,
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: true,
+				sourcePreview,
+			}
+		case NodeTypes.SIMPLE_EXPRESSION:
+			return {
+				tagName: null,
+				expression: compactWhitespace(node.content),
+				textContent: null,
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: !node.isStatic,
+				sourcePreview,
+			}
+		case NodeTypes.TEXT:
+			return {
+				tagName: null,
+				expression: null,
+				textContent: compactWhitespace(node.content),
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: false,
+				sourcePreview,
+			}
+		case NodeTypes.IF_BRANCH: {
+			const branchCondition = node.condition
+			const expression =
+				branchCondition?.type === NodeTypes.SIMPLE_EXPRESSION
+					? compactWhitespace(branchCondition.content)
+					: branchCondition
+						? truncateText(compactWhitespace(branchCondition.loc.source), 44)
+						: 'else branch'
 
-	if (node.type === NodeTypes.INTERPOLATION) {
-		const expression = parseInterpolationExpression(node)
-
-		return {
-			tagName: null,
-			expression,
-			textContent: null,
-			directiveNames: [],
-			attributeNames: [],
-			hasDynamicBindings: true,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
+			return {
+				tagName: null,
+				expression,
+				textContent: null,
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: true,
+				sourcePreview,
+			}
 		}
-	}
-
-	if (node.type === NodeTypes.SIMPLE_EXPRESSION) {
-		const expression = compactWhitespace(node.content)
-
-		return {
-			tagName: null,
-			expression,
-			textContent: null,
-			directiveNames: [],
-			attributeNames: [],
-			hasDynamicBindings: !node.isStatic,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
-		}
-	}
-
-	if (node.type === NodeTypes.TEXT) {
-		const textContent = compactWhitespace(node.content)
-
-		return {
-			tagName: null,
-			expression: null,
-			textContent,
-			directiveNames: [],
-			attributeNames: [],
-			hasDynamicBindings: false,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
-		}
-	}
-
-	if (node.type === NodeTypes.IF_BRANCH) {
-		const branchCondition = node.condition
-		const expression =
-			branchCondition?.type === NodeTypes.SIMPLE_EXPRESSION
-				? compactWhitespace(branchCondition.content)
-				: branchCondition
-					? truncateText(compactWhitespace(branchCondition.loc.source), 44)
-					: 'else branch'
-
-		return {
-			tagName: null,
-			expression,
-			textContent: null,
-			directiveNames: [],
-			attributeNames: [],
-			hasDynamicBindings: true,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
-		}
-	}
-
-	if (node.type === NodeTypes.FOR) {
-		return {
-			tagName: null,
-			expression: truncateText(compactWhitespace(node.loc.source), 44),
-			textContent: null,
-			directiveNames: [],
-			attributeNames: [],
-			hasDynamicBindings: true,
-			sourcePreview: truncateText(compactWhitespace(node.loc.source)),
-		}
-	}
-
-	return {
-		tagName: null,
-		expression: null,
-		textContent: null,
-		directiveNames: [],
-		attributeNames: [],
-		hasDynamicBindings: false,
-		sourcePreview: truncateText(compactWhitespace(node.loc.source)),
+		case NodeTypes.FOR:
+			return {
+				tagName: null,
+				expression: truncateText(compactWhitespace(node.loc.source), 44),
+				textContent: null,
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: true,
+				sourcePreview,
+			}
+		default:
+			return {
+				tagName: null,
+				expression: null,
+				textContent: null,
+				directiveNames: [],
+				attributeNames: [],
+				hasDynamicBindings: false,
+				sourcePreview,
+			}
 	}
 }
 

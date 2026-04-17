@@ -251,22 +251,6 @@ function swapProcessSources(): void {
 	processSourceAfter.value = previousBefore
 }
 
-function updateProcessSourceBefore(nextSource: string): void {
-	processSourceBefore.value = nextSource
-}
-
-function updateProcessSourceAfter(nextSource: string): void {
-	processSourceAfter.value = nextSource
-}
-
-function updateProcessExpanded(nextExpanded: boolean): void {
-	isProcessExpanded.value = nextExpanded
-}
-
-function updateProcessSpeed(nextSpeedMs: number): void {
-	processSpeedMs.value = nextSpeedMs
-}
-
 async function fitFlowToView(): Promise<void> {
 	const instance = vdomStore.flowInstance as {
 		fitView?: (options?: Record<string, unknown>) => Promise<boolean> | boolean
@@ -468,9 +452,9 @@ onUnmounted(() => {
 			:active-step="activeProcessStep"
 			:flow-nodes="processFlowNodes"
 			:flow-edges="processFlowEdges"
-			@update:is-expanded="updateProcessExpanded"
-			@update:source-before="updateProcessSourceBefore"
-			@update:source-after="updateProcessSourceAfter"
+			@update:is-expanded="isProcessExpanded = $event"
+			@update:source-before="processSourceBefore = $event"
+			@update:source-after="processSourceAfter = $event"
 			@set-before-from-after="setProcessBeforeFromAfter"
 			@swap-sources="swapProcessSources"
 			@toggle-playback="toggleProcessPlayback"
@@ -478,7 +462,7 @@ onUnmounted(() => {
 			@next-step="nextProcessStep"
 			@reset-step="resetProcessStep"
 			@jump-step="jumpToProcessStep"
-			@update:speed-ms="updateProcessSpeed"
+			@update:speed-ms="processSpeedMs = $event"
 			@flow-node-click="handleProcessFlowNodeClick"
 		/>
 		<!-- Virtual DOM Graph & Details (Grid at Bottom) -->
